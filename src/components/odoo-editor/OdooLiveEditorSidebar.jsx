@@ -64,9 +64,14 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { THEME_PALETTES_LIST, getTheme } from '../../config/themes';
-import { AVAILABLE_BLOCKS, ODOO_SHOP_TEMPLATES } from '../../config/shopBlocks';
 import { BLOCK_DESIGN_VARIANTS } from '../../config/blockDesignStyles';
-import { SNIPPET_SHAPES, SNIPPET_BORDER_STYLES, SNIPPET_SHADOW_STYLES } from '../../config/snippetShapes';
+import { 
+  SNIPPET_SHAPES, 
+  AVATAR_SHAPES, 
+  BUTTON_STYLES, 
+  SNIPPET_BORDER_STYLES, 
+  SNIPPET_SHADOW_STYLES 
+} from '../../config/snippetShapes';
 import { TEXT_COLOR_SWATCHES } from '../../config/colorTokens';
 import { CLOCK_STYLES } from '../../config/clockStyles';
 import { BLOCK_DEFAULT_SLOTS, getOrderedSlots, moveSlotInBlock } from '../../config/blockSlots';
@@ -1068,6 +1073,72 @@ export default function OdooLiveEditorSidebar({
                         );
                       })}
                     </div>
+                  </div>
+                </div>
+
+                {/* 🌟 2bis. FORME DES PHOTOS & BULLES DU BLOC */}
+                <div className="space-y-3 p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-slate-300 block">
+                      Forme Photo & Bulles (6 Variantes)
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {AVATAR_SHAPES.find(s => s.id === (selectedBlock.props?.avatarShape || 'squircle'))?.name}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {AVATAR_SHAPES.map((sh) => {
+                      const isSelected = (selectedBlock.props?.avatarShape || 'squircle') === sh.id;
+                      return (
+                        <button
+                          key={sh.id}
+                          type="button"
+                          onClick={() => onUpdateBlockProps?.(selectedBlock.id, { avatarShape: sh.id })}
+                          className={`p-2 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                            isSelected
+                              ? 'bg-emerald-500/20 border-emerald-500 text-white font-bold'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          <span className={`w-5 h-5 bg-emerald-600/30 border border-emerald-500 block ${sh.class}`} />
+                          <span className="text-[10px] truncate max-w-full">{sh.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 🌟 2ter. STYLE DES BOUTONS DU BLOC */}
+                <div className="space-y-3 p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-slate-300 block">
+                      Style des Boutons d'Action (5 Variantes)
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {BUTTON_STYLES.find(b => b.id === (selectedBlock.props?.buttonStyle || 'glow_gradient'))?.name}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {BUTTON_STYLES.map((btn) => {
+                      const isSelected = (selectedBlock.props?.buttonStyle || 'glow_gradient') === btn.id;
+                      return (
+                        <button
+                          key={btn.id}
+                          type="button"
+                          onClick={() => onUpdateBlockProps?.(selectedBlock.id, { buttonStyle: btn.id })}
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-500/20 border-emerald-500 text-white font-bold'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          <span className="text-xs font-bold block truncate">{btn.name}</span>
+                          <span className="text-[9px] text-slate-500 block truncate">{btn.desc}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

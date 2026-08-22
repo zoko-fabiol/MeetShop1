@@ -4,6 +4,7 @@ import { getTheme } from '../../config/themes';
 import { getButtonClasses, getAvatarClasses } from '../../config/blockStyles';
 import { getDesignVariant } from '../../config/blockDesignStyles';
 import { getCustomColorStyle } from '../../config/colorTokens';
+import { getAvatarShape, getButtonStyle } from '../../config/snippetShapes';
 import SlotReplacer from './SlotReplacer';
 
 export default function HeroBannerBlock({ 
@@ -32,13 +33,13 @@ export default function HeroBannerBlock({
   const slogan = props.slogan || heroFromLayout?.props?.slogan || shop?.description || 'Votre boutique locale vérifiée sur MeetShop.';
   const ctaText = props.ctaText || heroFromLayout?.props?.ctaText || 'Discuter sur WhatsApp';
 
-  // Style Tokens
-  const avatarStyle = props.avatarStyle || 'rounded';
-  const buttonStyle = props.buttonStyle || 'modern_rounded';
+  // Style Tokens avec support des 6 formes d'avatars et 5 variantes de boutons
+  const customAvatarShape = props.avatarShape ? getAvatarShape(props.avatarShape)?.class : null;
+  const customButtonStyle = props.buttonStyle ? getButtonStyle(props.buttonStyle)?.class : null;
 
-  const avatarContainerClass = getAvatarClasses(avatarStyle);
-  const primaryButtonClass = getButtonClasses(buttonStyle, theme, 'primary');
-  const secondaryButtonClass = getButtonClasses(buttonStyle, theme, 'secondary');
+  const avatarContainerClass = customAvatarShape || getAvatarClasses(props.avatarStyle || 'rounded');
+  const primaryButtonClass = customButtonStyle || dv.buttonClass || getButtonClasses(props.buttonStyle || 'modern_rounded', theme, 'primary');
+  const secondaryButtonClass = getButtonClasses(props.buttonStyle || 'modern_rounded', theme, 'secondary');
 
   const replacerProps = {
     blockId: currentBlockId,

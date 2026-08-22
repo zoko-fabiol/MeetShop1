@@ -4,6 +4,7 @@ import { getTheme } from '../../config/themes';
 import { getDesignVariant } from '../../config/blockDesignStyles';
 import { getCustomColorStyle } from '../../config/colorTokens';
 import { getOrderedSlots } from '../../config/blockSlots';
+import { getAvatarShape } from '../../config/snippetShapes';
 import SlotReplacer from './SlotReplacer';
 
 export default function AboutStoryBlock({ 
@@ -22,6 +23,7 @@ export default function AboutStoryBlock({
   const props = block?.props || {};
   const currentBlockId = blockId || block?.id;
   const dv = getDesignVariant(props.designVariant || 'modern_minimal');
+  const avatarShapeClass = getAvatarShape(props.avatarShape || 'squircle')?.class || 'rounded-2xl';
 
   const titleStyle = getCustomColorStyle(props.titleColor);
   const textStyle = getCustomColorStyle(props.textColor);
@@ -75,7 +77,7 @@ export default function AboutStoryBlock({
       <SlotReplacer slotName="commitmentsSlot" slotLabel="Cartes de Garanties & Stats" {...replacerProps}>
         <div className={`grid gap-3 sm:gap-4 ${isMobilePreview ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'}`}>
           <div className={`text-center space-y-1 ${dv.cardInnerClass || 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800'}`}>
-            <div className={`w-10 h-10 rounded-2xl ${theme.badge} flex items-center justify-center mx-auto mb-2`}>
+            <div className={`w-10 h-10 ${avatarShapeClass} ${theme.badge} flex items-center justify-center mx-auto mb-2 shadow-sm`}>
               <Zap className="w-5 h-5" />
             </div>
             <h4 className="font-black text-xs sm:text-sm text-current">Livraison &lt; 2h</h4>
@@ -83,7 +85,7 @@ export default function AboutStoryBlock({
           </div>
 
           <div className={`text-center space-y-1 ${dv.cardInnerClass || 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800'}`}>
-            <div className={`w-10 h-10 rounded-2xl ${theme.badge} flex items-center justify-center mx-auto mb-2`}>
+            <div className={`w-10 h-10 ${avatarShapeClass} ${theme.badge} flex items-center justify-center mx-auto mb-2 shadow-sm`}>
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h4 className="font-black text-xs sm:text-sm text-current">100% Conforme</h4>
@@ -91,7 +93,7 @@ export default function AboutStoryBlock({
           </div>
 
           <div className={`text-center space-y-1 ${dv.cardInnerClass || 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800'}`}>
-            <div className={`w-10 h-10 rounded-2xl ${theme.badge} flex items-center justify-center mx-auto mb-2`}>
+            <div className={`w-10 h-10 ${avatarShapeClass} ${theme.badge} flex items-center justify-center mx-auto mb-2 shadow-sm`}>
               <CreditCard className="w-5 h-5" />
             </div>
             <h4 className="font-black text-xs sm:text-sm text-current">Paiement Réception</h4>

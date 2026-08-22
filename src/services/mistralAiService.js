@@ -1,7 +1,8 @@
 /**
- * Service Copilote IA pour la Création & Refonte Intelligente de Vitrines Odoo
- * Utilise EXCLUSIVEMENT les 16 Styles de Design, les 12 Blocs Officiels et les 21 Contenus Intérieurs (Inner Snippets).
- * Aucune génération de blocs arbitraires ou inconnus.
+ * Moteur IA Génératif Avancé pour Vitrines & Boutiques Odoo (MeetShop AI Copilot)
+ * Connecté à Mistral AI avec prompts de direction artistique riches,
+ * combinant les 16 univers graphiques, les 12 blocs modulaires,
+ * les 21 snippets intérieurs, les 6 formes géométriques et les 5 styles de boutons.
  */
 
 const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY || 'rqxoM1TXeI5KguDB2UzE4Sya7JlCdAHA';
@@ -15,7 +16,7 @@ export async function generateStorefrontWithMistral({ shop = {}, answers = {} })
     const shopCategory = shop?.category || 'Commerce Général';
     const shopPhone = shop?.phone || '+237699123456';
 
-    // 1. Récupération & préservation des assets existants de la boutique
+    // 1. Récupération des assets existants
     const existingHeroBlock = shop?.layout_config?.blocks?.find(b => b && b.type === 'HeroBanner');
     const existingLogo = existingHeroBlock?.props?.customLogoUrl || shop?.logo_url || shop?.avatar || shop?.logo || '';
     const existingCover = existingHeroBlock?.props?.customCoverUrl || shop?.banner_url || shop?.cover_url || '';
@@ -35,69 +36,75 @@ export async function generateStorefrontWithMistral({ shop = {}, answers = {} })
     const style = answers.style || shop?.layout_config?.theme || 'emerald';
     const objective = answers.objective || 'Ventes directes WhatsApp et devis personnalisés';
 
-    // Sélection automatique du meilleur designVariant parmi les 16 univers
-    let targetDesignVariant = 'modern_minimal';
-    const posLow = positioning.toLowerCase();
-    const actLow = activity.toLowerCase();
+    // Sélection intelligente de la variante de design parmi les 16 univers Odoo
+    let targetDesignVariant = answers.designVariant && answers.designVariant !== 'auto' ? answers.designVariant : null;
 
-    if (posLow.includes('luxe') || posLow.includes('prestige') || actLow.includes('bijoux') || actLow.includes('joaillerie')) {
-      targetDesignVariant = 'luxury_editorial';
-    } else if (posLow.includes('tech') || posLow.includes('cyber') || actLow.includes('phone') || actLow.includes('informatique')) {
-      targetDesignVariant = 'cyber_tech_dark';
-    } else if (posLow.includes('streetwear') || posLow.includes('tendance') || actLow.includes('sneaker')) {
-      targetDesignVariant = 'streetwear_tokyo';
-    } else if (posLow.includes('bio') || posLow.includes('éco') || actLow.includes('épicerie') || actLow.includes('naturel')) {
-      targetDesignVariant = 'nature_organic';
-    } else if (posLow.includes('vintage') || posLow.includes('retro') || posLow.includes('artisanat')) {
-      targetDesignVariant = 'vintage_retro_warm';
-    } else if (posLow.includes('discount') || posLow.includes('pop')) {
-      targetDesignVariant = 'neo_brutalism_bold';
-    } else if (posLow.includes('minimal')) {
-      targetDesignVariant = 'nordic_scandi';
-    } else if (actLow.includes('beauté') || actLow.includes('cosmétique') || actLow.includes('parfum')) {
-      targetDesignVariant = 'sunset_warm_gradient';
+    if (!targetDesignVariant) {
+      const posLow = positioning.toLowerCase();
+      const actLow = activity.toLowerCase();
+
+      if (posLow.includes('luxe') || posLow.includes('prestige') || actLow.includes('bijoux') || actLow.includes('joaillerie') || actLow.includes('montre')) {
+        targetDesignVariant = 'luxury_editorial';
+      } else if (posLow.includes('tech') || posLow.includes('cyber') || actLow.includes('phone') || actLow.includes('informatique') || actLow.includes('laptop')) {
+        targetDesignVariant = 'cyber_tech_dark';
+      } else if (posLow.includes('streetwear') || posLow.includes('tendance') || actLow.includes('sneaker') || actLow.includes('chaussure')) {
+        targetDesignVariant = 'streetwear_tokyo';
+      } else if (posLow.includes('bio') || posLow.includes('éco') || actLow.includes('épicerie') || actLow.includes('naturel') || actLow.includes('aliment')) {
+        targetDesignVariant = 'nature_organic';
+      } else if (posLow.includes('vintage') || posLow.includes('retro') || posLow.includes('artisanat') || actLow.includes('terroir')) {
+        targetDesignVariant = 'vintage_retro_warm';
+      } else if (posLow.includes('discount') || posLow.includes('pop') || posLow.includes('bonne affaire')) {
+        targetDesignVariant = 'neo_brutalism_bold';
+      } else if (posLow.includes('minimal')) {
+        targetDesignVariant = 'nordic_scandi';
+      } else if (actLow.includes('beauté') || actLow.includes('cosmétique') || actLow.includes('parfum') || actLow.includes('mode')) {
+        targetDesignVariant = 'sunset_warm_gradient';
+      } else {
+        targetDesignVariant = 'modern_minimal';
+      }
     }
 
-    const systemPrompt = `Tu es le Directeur Artistique IA UI/UX & E-Commerce Senior de MeetShop.
-Tu dois générer l'architecture JSON complète d'une boutique haut de gamme, vendeuse et interactive.
-Tu DOIS impérativement utiliser UNIQUEMENT les 12 blocs officiels et les 21 contenus intérieurs (innerSnippets) de l'outil.
-NE CRÉE AUCUN BLOC INCONNU OU ARBITRAIRE (pas de "CustomAiBlock").
+    const systemPrompt = `Tu es le Directeur Artistique IA UI/UX Senior & Spécialiste E-Commerce de MeetShop.
+Ta mission est de concevoir une architecture de vitrine boutique UNIQUE, DIVERSIFIÉE et HAUTEMENT CONVERTISSEUSE pour le commerce au Cameroun.
 
-BLOCS DISPONIBLES :
-1. "HeroBanner" : { slogan: string, ctaText: string, designVariant: "${targetDesignVariant}", innerSnippets: [...] }
-2. "FlashDeal" : { title: string, subtitle: string, discountBadge: string, ctaText: string, designVariant: "${targetDesignVariant}", innerSnippets: [...] }
-3. "FeaturedProducts" : { title: string, subtitle: string, maxItems: 4, designVariant: "${targetDesignVariant}" }
-4. "CategoryCatalog" : { title: string, showSearch: true, showCategoryPills: true, designVariant: "${targetDesignVariant}" }
-5. "AboutStory" : { title: string, storyText: string, commitment1: string, commitment2: string, commitment3: string, sinceYear: "2021", badgeText: string, designVariant: "${targetDesignVariant}", innerSnippets: [...] }
-6. "CustomForm" : { title: string, subtitle: string, submitButtonText: string, collectContactInfo: true, questions: [...], designVariant: "${targetDesignVariant}" }
-7. "CustomCta" : { title: string, subtitle: string, primaryBtnText: string, badgeText: string, designVariant: "${targetDesignVariant}", innerSnippets: [...] }
-8. "FaqBlock" : { title: string, subtitle: string, items: [{ q: string, a: string }], designVariant: "${targetDesignVariant}" }
-9. "OpeningHours" : { title: string, mondayFriday: "08h00 - 19h30", saturday: "08h30 - 20h00", sunday: "12h00 - 18h00", designVariant: "${targetDesignVariant}" }
-10. "ContactMap" : { title: string, landmark: string, directPhone: "${shopPhone}", whatsappPhone: "${shopPhone}", designVariant: "${targetDesignVariant}" }
-11. "CustomerReviews" : { title: string, subtitle: string, designVariant: "${targetDesignVariant}" }
-12. "RichTextBlock" : { heading: string, content: string, badgeText: string, designVariant: "${targetDesignVariant}" }
-
-SNIPPETS INTÉRIEURS DISPONIBLES DANS "innerSnippets" :
-- rating (avis & étoiles), card (encart), share (partage), social_networks (liens), search, highlight, chart, progress, badge, badge_cta, avatars, quote, form, countdown, map, booking (RDV), donation, cart (catalogue).
-
-Tu DOIS impérativement répondre avec un JSON valide : { "theme": "${style}", "blocks": [...] }. N'inclus aucun emoji dans les textes.`;
+RÈGLES STRICTES D'ARCHITECTURE :
+1. Tu DOIS générer un JSON valide { "theme": "${style}", "blocks": [...] }.
+2. Utilise EXCLUSIVEMENT les 12 types de blocs modulaires officiels de MeetShop :
+   - "HeroBanner"
+   - "FlashDeal"
+   - "FeaturedProducts"
+   - "CategoryCatalog"
+   - "AboutStory"
+   - "CustomForm"
+   - "CustomCta"
+   - "FaqBlock"
+   - "OpeningHours"
+   - "ContactMap"
+   - "CustomerReviews"
+   - "RichTextBlock"
+3. N'invente AUCUN nom de bloc inconnu.
+4. Dans "innerSnippets" de chaque bloc, choisis parmi :
+   - "rating", "card", "share", "social_networks", "search", "highlight", "chart", "progress", "badge", "badge_cta", "avatars", "quote", "form", "countdown", "booking", "cart_button".
+5. Pour les formes d'avatars / photos ("avatarShape"), varie parmi : "circle", "squircle", "cyber_octo", "capsule", "leaf_asymmetric", "bubble_callout".
+6. Pour les styles de boutons ("buttonStyle"), varie parmi : "glow_gradient", "glassmorphism", "neo_brutalist", "ghost_arrow", "pill_chunky".
+7. N'INCLUS AUCUN ÉMOJI DANS LES TEXTES. Rédige un français commercial soigné, professionnel et engageant.`;
 
     const userPrompt = `Boutique : ${shopName}
-Ville : ${shopCity} (${shopQuarter})
+Ville : ${shopCity} (Quartier : ${shopQuarter})
 Secteur : ${activity}
 Positionnement : ${positioning}
 Objectif : ${objective}
 Atouts majeurs : ${advantages}
-Design Variant suggéré : ${targetDesignVariant}
+Univers graphique cible : ${targetDesignVariant}
 
-Génère maintenant l'architecture JSON complète avec les blocs standards et leurs contenus intérieurs.`;
+Génère maintenant une architecture JSON complète et originale de 6 à 9 blocs avec des textes d'accroche vendeurs adaptés à la cible locale.`;
 
     let resultLayout = null;
 
     if (MISTRAL_API_KEY && MISTRAL_API_KEY.length > 5) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 18000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         const response = await fetch(MISTRAL_API_URL, {
           method: 'POST',
@@ -108,7 +115,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
           signal: controller.signal,
           body: JSON.stringify({
             model: 'mistral-small-latest',
-            temperature: 0.8,
+            temperature: 0.85,
             response_format: { type: 'json_object' },
             messages: [
               { role: 'system', content: systemPrompt },
@@ -135,7 +142,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
       }
     }
 
-    // Si pas de réponse API ou bloc non reconnu, on utilise le générateur standard structuré
+    // Si pas de réponse API ou bloc non reconnu, on utilise le générateur expert structuré multi-variantes
     if (!resultLayout || !Array.isArray(resultLayout.blocks) || resultLayout.blocks.length === 0) {
       resultLayout = generateStandardLayout({ 
         shop, 
@@ -151,7 +158,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
     const validBlockTypes = new Set([
       'HeroBanner', 'FlashDeal', 'FeaturedProducts', 'CategoryCatalog', 
       'AboutStory', 'OpeningHours', 'CustomerReviews', 'ContactMap', 
-      'CustomCta', 'CustomForm', 'RichText', 'FaqBlock'
+      'CustomCta', 'CustomForm', 'RichTextBlock', 'FaqBlock'
     ]);
 
     resultLayout.theme = style;
@@ -161,7 +168,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
       
       let blockType = block.type;
       if (!validBlockTypes.has(blockType)) {
-        blockType = 'AboutStory'; // Remplacer tout type invalide par AboutStory
+        blockType = 'AboutStory';
       }
 
       const currentProps = block.props || {};
@@ -171,6 +178,8 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
         designVariant: currentProps.designVariant || targetDesignVariant,
         titleColor: currentProps.titleColor || 'default',
         textColor: currentProps.textColor || 'default',
+        avatarShape: currentProps.avatarShape || (idx % 2 === 0 ? 'squircle' : 'circle'),
+        buttonStyle: currentProps.buttonStyle || 'glow_gradient',
         innerSnippets: Array.isArray(currentProps.innerSnippets) ? currentProps.innerSnippets : []
       };
 
@@ -205,7 +214,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
       };
     }).filter(Boolean);
 
-    // Conserver le bloc avis authentiques s'il existait déjà avec des avis
+    // Conserver les avis authentiques s'ils existaient
     if (existingReviewsBlock && !resultLayout.blocks.some(b => b && b.type === 'CustomerReviews')) {
       resultLayout.blocks.splice(Math.max(0, resultLayout.blocks.length - 2), 0, existingReviewsBlock);
     }
@@ -218,7 +227,7 @@ Génère maintenant l'architecture JSON complète avec les blocs standards et le
 }
 
 /**
- * Générateur Standard Structuré (Utilise 100% les outils, designs et snippets officiels)
+ * Générateur Standard Dynamique Multi-Variantes (Garantit une diversité totale)
  */
 function generateStandardLayout({ 
   shop = {}, 
@@ -234,6 +243,7 @@ function generateStandardLayout({
   const shopPhone = shop?.phone || '+237699123456';
   const activity = answers?.activity || shop?.category || 'Commerce Général';
   const requestedTheme = answers?.style || shop?.layout_config?.theme || 'emerald';
+  const siteType = answers?.siteType || 'eCommerce';
 
   const formQuestions = [
     { id: 'q1', label: `Quel article précis recherchez-vous chez ${shopName} ?`, type: 'text', required: true, placeholder: 'Ex: Modèle, référence ou besoin particulier' },
@@ -241,170 +251,189 @@ function generateStandardLayout({
     { id: 'q3', label: 'Précisions complémentaires', type: 'textarea', required: false, placeholder: 'Indiquez toute exigence ou adresse de livraison...' }
   ];
 
+  // Variations selon le type de commerce
+  const isDestockage = siteType.toLowerCase().includes('destock') || siteType.toLowerCase().includes('promo');
+  const isExclusive = siteType.toLowerCase().includes('exclusive') || siteType.toLowerCase().includes('marque');
+  const isVitrine = siteType.toLowerCase().includes('vitrine');
+
+  const blocks = [];
+
+  // 1. HeroBanner Adapté
+  blocks.push({
+    id: `b-hero-${Date.now()}`,
+    type: 'HeroBanner',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      customLogoUrl: existingLogo,
+      customCoverUrl: existingCover,
+      slogan: isExclusive
+        ? `L'univers exclusif et haute précision ${activity} à ${shopQuarter}, ${shopCity}.`
+        : isDestockage
+          ? `Offres exceptionnelles & arrivages directs ${activity} à ${shopQuarter}, ${shopCity}. Prix imbattables.`
+          : `L'excellence ${activity} à ${shopQuarter}, ${shopCity}. Commandez en direct et recevez sous 2h.`,
+      ctaText: isVitrine ? 'Découvrir la Collection' : 'Commander sur WhatsApp',
+      showStats: true,
+      showLiveBadge: true,
+      avatarShape: isExclusive ? 'leaf_asymmetric' : 'squircle',
+      buttonStyle: isDestockage ? 'neo_brutalist' : 'glow_gradient',
+      innerSnippets: [
+        { id: `snip-hero-${Date.now()}`, snippetType: 'rating', ratingScore: '4.9', reviewsCount: '194', shape: 'rounded_capsule', alignment: 'center', width: '100%' }
+      ]
+    }
+  });
+
+  // 2. FlashDeal ou Offre Spéciale
+  if (isDestockage || !isVitrine) {
+    blocks.push({
+      id: `b-flash-${Date.now()}`,
+      type: 'FlashDeal',
+      visible: true,
+      props: {
+        designVariant: targetDesignVariant,
+        title: isDestockage ? 'Vente Flash Déstockage Immédiat' : 'Offre Spéciale Nouveaux Arrivages',
+        subtitle: `Profitez des réductions exclusives du jour sur toute la collection ${activity} !`,
+        discountBadge: isDestockage ? '-35% IMMÉDIAT' : '-25% EXCLUSIF',
+        ctaText: 'Réclamer mon offre sur WhatsApp',
+        buttonStyle: 'glow_gradient',
+        innerSnippets: [
+          { id: `snip-flash-${Date.now()}`, snippetType: 'countdown', title: 'Temps Restant Offre Flash', shape: 'rounded_modern', alignment: 'center', width: '100%' }
+        ]
+      }
+    });
+  }
+
+  // 3. Featured Products
+  blocks.push({
+    id: `b-featured-${Date.now()}`,
+    type: 'FeaturedProducts',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: isExclusive ? 'Pièces Rares & Éditions Limitées' : 'Sélection Vedette du Moment',
+      subtitle: 'Nos articles les plus demandés, contrôlés et plébiscités par nos clients',
+      maxItems: 4
+    }
+  });
+
+  // 4. Category Catalog
+  blocks.push({
+    id: `b-catalog-${Date.now()}`,
+    type: 'CategoryCatalog',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: `Tout le Catalogue ${shopName}`,
+      showSearch: true,
+      showCategoryPills: true
+    }
+  });
+
+  // 5. About Story avec Avatars ou Citation
+  blocks.push({
+    id: `b-about-${Date.now()}`,
+    type: 'AboutStory',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: `L'Engagement ${shopName}`,
+      storyText: `Implantée à ${shopQuarter} (${shopCity}), notre équipe sélectionne des articles ${activity} avec des critères de qualité stricts et une garantie de satisfaction.`,
+      commitment1: 'Authenticité 100% garantie sur tous nos produits',
+      commitment2: 'Livraison express en moins de 2h à Douala et Yaoundé',
+      commitment3: 'Paiement sécurisé à la livraison ou Mobile Money',
+      sinceYear: '2022',
+      badgeText: 'Qualité Certifiée',
+      avatarShape: 'squircle',
+      innerSnippets: [
+        { id: `snip-about-${Date.now()}`, snippetType: isExclusive ? 'quote' : 'avatars', shape: 'rounded_modern', alignment: 'center', width: '100%' }
+      ]
+    }
+  });
+
+  // 6. Custom Form
+  blocks.push({
+    id: `b-form-${Date.now()}`,
+    type: 'CustomForm',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: 'Besoin d\'un Conseil ou d\'un Devis Personnalisé ?',
+      subtitle: 'Indiquez votre besoin pour recevoir une proposition directe sur WhatsApp.',
+      submitButtonText: 'Transmettre ma demande',
+      buttonStyle: 'glow_gradient',
+      collectContactInfo: true,
+      questions: formQuestions
+    }
+  });
+
+  // 7. Custom CTA
+  blocks.push({
+    id: `b-cta-${Date.now()}`,
+    type: 'CustomCta',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: 'Une question ? Notre équipe vous répond immédiatement',
+      subtitle: 'Discutez en direct avec notre responsable de vente pour toute demande.',
+      primaryBtnText: 'Lancer la discussion WhatsApp',
+      badgeText: 'Réponse en moins de 5 min',
+      buttonStyle: 'glow_gradient',
+      innerSnippets: [
+        { id: `snip-cta-${Date.now()}`, snippetType: 'booking', title: 'Réservation Prioritaire', subtitle: 'Réservez votre article avant rupture', shape: 'rounded_modern', alignment: 'center', width: '100%' }
+      ]
+    }
+  });
+
+  // 8. FAQ
+  blocks.push({
+    id: `b-faq-${Date.now()}`,
+    type: 'FaqBlock',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: 'Questions Fréquentes',
+      subtitle: 'Tout ce que vous devez savoir avant de passer commande',
+      items: [
+        { q: 'Comment se passe la livraison ?', a: `Les livraisons sont assurées sous 2h à ${shopCity} et en 24h pour les autres villes du Cameroun.` },
+        { q: 'Puis-je vérifier l\'article avant de payer ?', a: 'Absolument ! Vous avez le droit d\'inspecter votre colis avant de régler au livreur.' },
+        { q: 'Quels sont les modes de paiement acceptés ?', a: 'Espèces à la livraison, Orange Money et MTN Mobile Money.' }
+      ]
+    }
+  });
+
+  // 9. Opening Hours
+  blocks.push({
+    id: `b-hours-${Date.now()}`,
+    type: 'OpeningHours',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: 'Horaires d\'Ouverture & Retraits',
+      statusText: 'Ouvert maintenant',
+      mondayFriday: '08h00 - 19h30',
+      saturday: '08h30 - 20h00',
+      sunday: '12h00 - 18h00'
+    }
+  });
+
+  // 10. Contact Map
+  blocks.push({
+    id: `b-contact-${Date.now()}`,
+    type: 'ContactMap',
+    visible: true,
+    props: {
+      designVariant: targetDesignVariant,
+      title: 'Nous Rendre Visite en Boutique',
+      landmark: existingLandmark || `Situé à ${shopQuarter}, ${shopCity}`,
+      directPhone: shopPhone,
+      whatsappPhone: shopPhone,
+      city: shopCity
+    }
+  });
+
   return {
     theme: requestedTheme,
-    blocks: [
-      // 1. HeroBanner avec Inner Snippet Note / Étoiles
-      {
-        id: `b-hero-${Date.now()}`,
-        type: 'HeroBanner',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          customLogoUrl: existingLogo,
-          customCoverUrl: existingCover,
-          slogan: `L'univers d'excellence ${activity} à ${shopQuarter}, ${shopCity}. Arrivages certifiés et livraison express.`,
-          ctaText: 'Commander sur WhatsApp',
-          showStats: true,
-          showLiveBadge: true,
-          innerSnippets: [
-            { id: `snip-hero-${Date.now()}`, snippetType: 'rating', ratingScore: '4.9', reviewsCount: '194', shape: 'rounded_capsule', alignment: 'center', width: '100%' }
-          ]
-        }
-      },
-
-      // 2. FlashDeal avec Compte à Rebours
-      {
-        id: `b-flash-${Date.now()}`,
-        type: 'FlashDeal',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Offre Spéciale Nouveaux Arrivages',
-          subtitle: `Profitez des réductions exclusives du jour sur toute la collection ${activity} !`,
-          discountBadge: '-25% IMMÉDIAT',
-          ctaText: 'Réclamer mon code promo sur WhatsApp',
-          innerSnippets: [
-            { id: `snip-flash-${Date.now()}`, snippetType: 'countdown', title: 'Temps Restant Offre Flash', shape: 'rounded_modern', alignment: 'center', width: '100%' }
-          ]
-        }
-      },
-
-      // 3. Featured Products
-      {
-        id: `b-featured-${Date.now()}`,
-        type: 'FeaturedProducts',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Sélection Vedette du Moment',
-          subtitle: 'Nos meilleures ventes contrôlées et plébiscitées par nos clients',
-          maxItems: 4
-        }
-      },
-
-      // 4. Category Catalog
-      {
-        id: `b-catalog-${Date.now()}`,
-        type: 'CategoryCatalog',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: `Tout le Catalogue ${shopName}`,
-          showSearch: true,
-          showCategoryPills: true
-        }
-      },
-
-      // 5. About Story avec Snippet Avatars
-      {
-        id: `b-about-${Date.now()}`,
-        type: 'AboutStory',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: `Pourquoi choisir ${shopName} ?`,
-          storyText: `Implantée à ${shopQuarter} (${shopCity}), notre boutique s'engage à vous fournir des articles de premier choix avec un service après-vente dévoué.`,
-          commitment1: 'Authenticité 100% garantie sur tous nos articles',
-          commitment2: 'Livraison express en moins de 2h à Douala et Yaoundé',
-          commitment3: 'Paiement sécurisé à la livraison ou Mobile Money',
-          sinceYear: '2022',
-          badgeText: 'Qualité Certifiée',
-          innerSnippets: [
-            { id: `snip-about-${Date.now()}`, snippetType: 'avatars', shape: 'rounded_modern', alignment: 'center', width: '100%' }
-          ]
-        }
-      },
-
-      // 6. Custom Form
-      {
-        id: `b-form-${Date.now()}`,
-        type: 'CustomForm',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Besoin d\'un Conseil ou d\'un Devis Rapide ?',
-          subtitle: 'Remplissez ces quelques informations pour être orienté directement sur WhatsApp.',
-          submitButtonText: 'Transmettre ma demande sur WhatsApp',
-          collectContactInfo: true,
-          questions: formQuestions
-        }
-      },
-
-      // 7. Custom CTA avec Snippet Réservation / RDV
-      {
-        id: `b-cta-${Date.now()}`,
-        type: 'CustomCta',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Une question ? Notre équipe vous répond immédiatement',
-          subtitle: 'Discutez en direct avec notre responsable de vente pour toute demande personnalisée.',
-          primaryBtnText: 'Lancer la discussion WhatsApp',
-          badgeText: 'Disponibilité 7j/7',
-          innerSnippets: [
-            { id: `snip-cta-${Date.now()}`, snippetType: 'booking', title: 'Réservation Prioritaire', subtitle: 'Réservez votre passage en boutique', shape: 'rounded_modern', alignment: 'center', width: '100%' }
-          ]
-        }
-      },
-
-      // 8. FAQ
-      {
-        id: `b-faq-${Date.now()}`,
-        type: 'FaqBlock',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Questions Fréquentes',
-          subtitle: 'Tout ce que vous devez savoir avant de passer commande',
-          items: [
-            { q: 'Comment se passe la livraison ?', a: `Les livraisons sont assurées sous 2h à ${shopCity} et en 24h pour les autres villes du Cameroun.` },
-            { q: 'Puis-je vérifier l\'article avant de payer ?', a: 'Absolument ! Vous avez le droit d\'inspecter votre colis avant de régler au livreur.' },
-            { q: 'Quels sont les modes de paiement acceptés ?', a: 'Espèces à la livraison, Orange Money et MTN Mobile Money.' }
-          ]
-        }
-      },
-
-      // 9. Opening Hours
-      {
-        id: `b-hours-${Date.now()}`,
-        type: 'OpeningHours',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Horaires d\'Ouverture & Retraits',
-          statusText: 'Ouvert maintenant',
-          mondayFriday: '08h00 - 19h30',
-          saturday: '08h30 - 20h00',
-          sunday: '12h00 - 18h00'
-        }
-      },
-
-      // 10. Contact & Localisation
-      {
-        id: `b-contact-${Date.now()}`,
-        type: 'ContactMap',
-        visible: true,
-        props: {
-          designVariant: targetDesignVariant,
-          title: 'Nous Rendre Visite en Boutique',
-          landmark: existingLandmark || `Situé à ${shopQuarter}, ${shopCity}`,
-          directPhone: shopPhone,
-          whatsappPhone: shopPhone,
-          city: shopCity
-        }
-      }
-    ]
+    blocks
   };
 }
 
@@ -435,4 +464,3 @@ export async function modifyCustomBlockWithMistral({ block = {}, modificationPro
     subtitle: modificationPrompt || props.subtitle || 'Service rapide et produits certifiés'
   };
 }
-
