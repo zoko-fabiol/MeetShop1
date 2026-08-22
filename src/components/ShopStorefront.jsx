@@ -41,7 +41,58 @@ import OdooLiveEditorSidebar from './odoo-editor/OdooLiveEditorSidebar';
 import OdooLiveCanvasWrapper from './odoo-editor/OdooLiveCanvasWrapper';
 import { recordShopView } from '../services/analyticsService';
 
-export default function ShopStorefront({
+class StorefrontErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('Erreur attrapée par StorefrontErrorBoundary:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900 text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto shadow-lg">
+            <Sparkles className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white">
+            Récupération automatique de la boutique
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            Un élément visuel a nécessité un rechargement propre. Cliquez ci-dessous pour actualiser la vitrine sans perte de données.
+          </p>
+          <div className="flex items-center gap-3 justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+            >
+              Recharger la boutique
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function ShopStorefront(props) {
+  return (
+    <StorefrontErrorBoundary>
+      <ShopStorefrontInner {...props} />
+    </StorefrontErrorBoundary>
+  );
+}
+
+function ShopStorefrontInner({
   shop,
   products = [],
   onBackToMarketplace,

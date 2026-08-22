@@ -184,6 +184,7 @@ export default function InnerSnippetSlotContainer({
       {/* Grille Flex-wrap des Snippets */}
       <div className="flex flex-wrap items-center gap-2.5">
         {snippets.map((snip, index) => {
+          if (!snip || typeof snip !== 'object') return null;
           const isSelected = isEditMode && selectedSnippetId === snip.id;
           const isDragging = draggingSnippetId === snip.id;
           const isPill = ['facebook', 'instagram', 'whatsapp', 'tiktok', 'youtube'].includes(snip.snippetType || snip.type);

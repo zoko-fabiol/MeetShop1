@@ -635,15 +635,19 @@ export default function InnerSnippetRenderer({
       )}
 
       {/* 21. BOUTON PANIER RAPIDE */}
-      {snippetType === 'cart' && (
+      {(snippetType === 'cart' || snippetType === 'cart_button') && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <ShoppingBag className="w-4 h-4" />
             </div>
             <div>
-              <h4 style={titleStyle} className={`text-xs sm:text-sm ${dv.headerClass}`}>Consultez le Catalogue</h4>
-              <p style={textStyle} className={`text-[11px] ${dv.subTextClass}`}>Tous les articles en stock prêts à être expédiés</p>
+              <h4 style={titleStyle} className={`text-xs sm:text-sm ${dv.headerClass}`}>
+                {props.title || 'Consultez le Catalogue'}
+              </h4>
+              <p style={textStyle} className={`text-[11px] ${dv.subTextClass}`}>
+                {props.subtitle || 'Tous les articles en stock prêts à être expédiés'}
+              </p>
             </div>
           </div>
           <button
@@ -658,8 +662,34 @@ export default function InnerSnippetRenderer({
             className={`px-3.5 py-1.5 text-xs flex items-center gap-1.5 ${dv.buttonClass}`}
           >
             <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Voir les articles</span>
+            <span>{props.buttonText || 'Voir les articles'}</span>
           </button>
+        </div>
+      )}
+
+      {/* 22. REPLI UNIVERSEL POUR TOUT CONTENU INCONNU / PERSONNALISÉ */}
+      {![
+        'rating', 'card', 'share', 'social_networks', 'facebook', 'instagram',
+        'whatsapp', 'tiktok', 'youtube', 'search', 'highlight', 'chart',
+        'progress', 'badge', 'badge_cta', 'avatars', 'quote', 'form',
+        'countdown', 'embed', 'map', 'booking', 'donation', 'cart', 'cart_button'
+      ].includes(snippetType) && (
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h4 style={titleStyle} className={`text-xs sm:text-sm font-bold ${dv.headerClass}`}>
+              {props.title || props.name || props.label || 'Élément Personnalisé'}
+            </h4>
+            {props.subtitle && (
+              <p style={textStyle} className={`text-[11px] opacity-80 ${dv.subTextClass}`}>
+                {props.subtitle}
+              </p>
+            )}
+          </div>
+          {props.badgeText && (
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${dv.accentBadgeClass}`}>
+              {props.badgeText}
+            </span>
+          )}
         </div>
       )}
 

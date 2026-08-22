@@ -62,6 +62,7 @@ export default function CustomerReviewsBlock({
 
   const replacerProps = {
     blockId: currentBlockId,
+    blockType: 'CustomerReviews',
     blockProps: props,
     isEditMode,
     onUpdateBlockProps,

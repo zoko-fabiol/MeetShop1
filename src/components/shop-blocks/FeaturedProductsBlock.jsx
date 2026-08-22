@@ -26,8 +26,18 @@ export default function FeaturedProductsBlock({ block, shop, themeId, onSelectPr
   const buttonClass = getButtonClasses(buttonStyle, theme, 'primary');
 
   // Filtrer les produits de la boutique
-  const shopProducts = products.filter(p => p.shopId === shop.id || p.shopName === shop.name);
-  const displayProducts = shopProducts.slice(0, maxItems);
+  const shopProducts = Array.isArray(products) ? products.filter(p => p && (p.shopId === shop.id || p.shopName === shop.name)) : [];
+  
+  // En mode édition, si la boutique n'a pas encore de produits, afficher des modèles d'exemples
+  const sampleProducts = [
+    { id: 'sample-1', name: 'Article Tendance du Moment', price: 15000, isNew: true, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop&q=80' },
+    { id: 'sample-2', name: 'Sélection Vedette Premium', price: 25000, isNew: false, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80' },
+    { id: 'sample-3', name: 'Édition Spéciale Boutique', price: 35000, isNew: true, image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&auto=format&fit=crop&q=80' }
+  ];
+
+  const displayProducts = shopProducts.length > 0 
+    ? shopProducts.slice(0, maxItems) 
+    : (isEditMode ? sampleProducts : []);
 
   if (displayProducts.length === 0) {
     return null;

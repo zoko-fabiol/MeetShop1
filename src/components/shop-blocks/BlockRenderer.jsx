@@ -115,19 +115,27 @@ export default function BlockRenderer({
       case 'CategoryCatalog':
         return <CategoryCatalogBlock {...commonProps} />;
       case 'AboutStory':
+      case 'AboutStoryBlock':
         return <AboutStoryBlock {...commonProps} />;
       case 'OpeningHours':
+      case 'OpeningHoursBlock':
         return <OpeningHoursBlock {...commonProps} />;
       case 'CustomerReviews':
+      case 'CustomerReviewsBlock':
         return <CustomerReviewsBlock {...commonProps} />;
       case 'ContactMap':
+      case 'ContactMapBlock':
         return <ContactMapBlock {...commonProps} />;
       case 'CustomForm':
+      case 'CustomFormBlock':
         return <CustomFormBlock {...commonProps} />;
       case 'CustomCta':
+      case 'CustomCtaBlock':
         return <CustomCtaBlock {...commonProps} />;
       case 'RichText':
+      case 'RichTextBlock':
         return <RichTextBlock {...commonProps} />;
+      case 'FaqBlock':
       case 'FaqAccordion':
       case 'Faq':
         return <FaqBlock {...commonProps} />;
@@ -152,6 +160,13 @@ export default function BlockRenderer({
           />
         );
       default:
+        if (isEditMode) {
+          return (
+            <div className="p-4 my-2 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 text-xs text-slate-500 text-center">
+              <span>Bloc personnalisable : <strong>{block.type}</strong></span>
+            </div>
+          );
+        }
         return null;
     }
   };
