@@ -25,7 +25,7 @@ import {
   CheckSquare
 } from 'lucide-react';
 import { generateStorefrontWithMistral } from '../../services/mistralAiService';
-import { THEME_PALETTES, getTheme } from '../../config/themes';
+import { THEME_PALETTES, THEME_PALETTES_LIST, getTheme } from '../../config/themes';
 import { BLOCK_DESIGN_VARIANTS } from '../../config/blockDesignStyles';
 
 const SITE_TYPES = [
@@ -487,12 +487,12 @@ export default function AiStorefrontConfiguratorTab({
                     <span>Palette de Couleurs</span>
                   </span>
                   <span className="text-[11px] font-mono text-emerald-500 font-bold capitalize">
-                    {THEME_PALETTES.find(t => t.id === selectedTheme)?.name || 'Émeraude'}
+                    {getTheme(selectedTheme)?.name || 'Émeraude'}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  {THEME_PALETTES.map((pal) => {
+                  {(THEME_PALETTES_LIST || Object.values(THEME_PALETTES)).map((pal) => {
                     const isCur = selectedTheme === pal.id;
                     return (
                       <button
@@ -507,7 +507,7 @@ export default function AiStorefrontConfiguratorTab({
                       >
                         <span 
                           className="w-5 h-5 rounded-full shadow-inner block"
-                          style={{ backgroundColor: pal.color }}
+                          style={{ backgroundColor: pal.hex || pal.color || '#16a34a' }}
                         />
                         <span className="text-[11px] font-bold truncate max-w-full">{pal.name}</span>
                       </button>
