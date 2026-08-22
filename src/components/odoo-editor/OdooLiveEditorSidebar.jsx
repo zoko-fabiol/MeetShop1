@@ -61,7 +61,8 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  RotateCcw
+  RotateCcw,
+  Move
 } from 'lucide-react';
 import { THEME_PALETTES_LIST, getTheme } from '../../config/themes';
 import { AVAILABLE_BLOCKS, ODOO_SHOP_TEMPLATES } from '../../config/shopBlocks';
