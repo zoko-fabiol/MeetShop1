@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MeetShop — Live Marketplace Cameroun (Douala & Yaoundé)</title>
+    <meta name="description" content="#1 Marketplace de proximité au Cameroun. Recherche visuelle IA, 150+ boutiques locales, livraison express < 2h." />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Theme bootstrap : applique dark/light AVANT le premier rendu React pour éviter le flash -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('meetshop_theme') || localStorage.getItem('meetshop_theme_mode');
+          var isDark;
+          if (saved === 'dark') {
+            isDark = true;
+          } else if (saved === 'light') {
+            isDark = false;
+          } else {
+            // Par défaut : prend le thème du système
+            isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          var root = document.documentElement;
+          if (isDark) {
+            root.classList.add('dark');
+            root.classList.remove('light');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.classList.add('light');
+            root.classList.remove('dark');
+            root.style.colorScheme = 'light';
+          }
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body class="antialiased selection:bg-green-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

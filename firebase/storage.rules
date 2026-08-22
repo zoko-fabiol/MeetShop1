@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Images publiques de produits et boutiques
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /shops/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    // Uploads temporaires pour la recherche visuelle IA (si besoin côté cloud)
+    match /visual_searches/{imageId} {
+      allow create: if true;
+      allow read: if true;
+    }
+  }
+}
