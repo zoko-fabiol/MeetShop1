@@ -34,7 +34,7 @@ export const INITIAL_SHOPS = [
           type: "FlashDeal",
           visible: true,
           props: {
-            title: "⚡ Vente Flash Accessoires TWS !",
+            title: "Vente Flash Accessoires TWS !",
             subtitle: "Jusqu'à 5 000 FCFA de remise immédiate sur les écouteurs sans fil.",
             discountBadge: "-25% IMMÉDIAT",
             endsInHours: 24,
@@ -46,7 +46,7 @@ export const INITIAL_SHOPS = [
           type: "FeaturedProducts",
           visible: true,
           props: {
-            title: "🔥 Nos Meilleures Ventes",
+            title: "Nos Meilleures Ventes",
             subtitle: "Sélection coup de cœur certifiée par ZOKOSTORE",
             maxItems: 4
           }
@@ -68,9 +68,9 @@ export const INITIAL_SHOPS = [
           props: {
             title: "Qui est ZOKOSTORE ?",
             storyText: "Installés Rue Foch à Akwa, nous proposons les meilleurs équipements électroniques avec garantie 1 an et SAV local réactif.",
-            commitment1: "⚡ Livraison en moins de 45 min sur Douala",
-            commitment2: "🛡️ Produits certifiés originaux",
-            commitment3: "💳 Paiement OM / MoMo à la livraison"
+            commitment1: "Livraison en moins de 45 min sur Douala",
+            commitment2: "Produits certifiés originaux",
+            commitment3: "Paiement OM / MoMo à la livraison"
           }
         },
         {
@@ -137,7 +137,7 @@ export const INITIAL_SHOPS = [
           type: "FeaturedProducts",
           visible: true,
           props: {
-            title: "🥗 Sélection Fraîcheur du Jour",
+            title: "Sélection Fraîcheur du Jour",
             subtitle: "Récoltes locales garanties sans conservateurs"
           }
         },
@@ -157,9 +157,9 @@ export const INITIAL_SHOPS = [
           props: {
             title: "L'Engagement ANABA BIO",
             storyText: "Nous collaborons directement avec les coopératives agricoles de l'Ouest et du Centre pour vous offrir le meilleur de la terre.",
-            commitment1: "⚡ Paniers livrés frais chaque matin à Bastos",
-            commitment2: "🛡️ Traçabilité 100% naturelle",
-            commitment3: "💳 Paiement facile à réception"
+            commitment1: "Paniers livrés frais chaque matin à Bastos",
+            commitment2: "Traçabilité 100% naturelle",
+            commitment3: "Paiement facile à réception"
           }
         },
         {
@@ -220,7 +220,7 @@ export const INITIAL_SHOPS = [
           type: "FeaturedProducts",
           visible: true,
           props: {
-            title: "🛋️ Confort & Maison",
+            title: "Confort & Maison",
             subtitle: "Nos équipements stars pour cuisine et salon"
           }
         },
@@ -282,7 +282,7 @@ export const INITIAL_SHOPS = [
           type: "FlashDeal",
           visible: true,
           props: {
-            title: "⚡ Promo Laptops & Smartphones 5G",
+            title: "Promo Laptops & Smartphones 5G",
             subtitle: "Jusqu'à -30% avec sacoche et souris offertes !",
             discountBadge: "-30% PROMO",
             endsInHours: 12
@@ -293,7 +293,7 @@ export const INITIAL_SHOPS = [
           type: "FeaturedProducts",
           visible: true,
           props: {
-            title: "💻 Machines & Téléphones Haut de Gamme"
+            title: "Machines & Téléphones Haut de Gamme"
           }
         },
         {

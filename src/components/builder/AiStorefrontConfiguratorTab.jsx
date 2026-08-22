@@ -579,7 +579,7 @@ export default function AiStorefrontConfiguratorTab({
                       : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:border-slate-300'
                   }`}
                 >
-                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block">✨ Auto (Recommandé)</span>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block">Auto (Recommandé)</span>
                   <span className="text-[10px] text-slate-500 block truncate">L'IA choisit le style parfait</span>
                 </button>
 

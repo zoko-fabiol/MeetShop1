@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, ShoppingBag, Send, MapPin, User, Phone, CheckCircle2, Zap, Sparkles } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Send, MapPin, User, Phone, CheckCircle2, Zap, Sparkles, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { formatWhatsAppOrder } from '../services/whatsappService';
 import { calculateWholesaleTier } from '../services/wholesaleService';
@@ -270,7 +270,7 @@ export default function CartDrawer({ isOpen, onClose, onOpenCheckoutSummary }) {
               {/* Badge Multi-Boutiques */}
               {uniqueShopsCount > 1 && (
                 <div className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 text-[11px] font-bold flex items-center justify-between">
-                  <span>📦 Commande Multi-Boutiques</span>
+                  <span className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Commande Multi-Boutiques</span>
                   <span className="font-mono bg-purple-500/15 px-2 py-0.5 rounded-md">{uniqueShopsCount} colis distincts</span>
                 </div>
               )}

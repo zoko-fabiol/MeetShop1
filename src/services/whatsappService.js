@@ -19,42 +19,42 @@ export function formatWhatsAppOrder({
   const cleanPhone = shopPhone.replace(/\D/g, '');
   const idStr = orderId || `CMD-${Date.now().toString().slice(-6)}`;
 
-  let text = `🛍️ *COMMANDE MEETSHOP — #${idStr}*\n`;
+  let text = `*COMMANDE MEETSHOP — #${idStr}*\n`;
   if (totalPackages && totalPackages > 1 && packageIndex) {
-    text += `📦 *Colis ${packageIndex}/${totalPackages}* (Boutique : *${targetShopName || items[0]?.shopName}*)\n`;
+    text += `*Colis ${packageIndex}/${totalPackages}* (Boutique : *${targetShopName || items[0]?.shopName}*)\n`;
   } else if (targetShopName || items[0]?.shopName) {
-    text += `🏬 *Boutique :* *${targetShopName || items[0]?.shopName}*\n`;
+    text += `*Boutique :* *${targetShopName || items[0]?.shopName}*\n`;
   }
   text += `════════════════════════════════\n\n`;
 
-  text += `👤 *INFORMATIONS DU CLIENT :*\n`;
-  text += `▫️ *Nom :* ${customer?.name || 'Client'}\n`;
-  text += `▫️ *Téléphone :* ${customer?.phone || 'N/A'}\n`;
-  text += `▫️ *Ville :* ${customer?.city || 'Douala'} (${customer?.quarter || 'Non précisé'})\n`;
+  text += `*INFORMATIONS DU CLIENT :*\n`;
+  text += `• *Nom :* ${customer?.name || 'Client'}\n`;
+  text += `• *Téléphone :* ${customer?.phone || 'N/A'}\n`;
+  text += `• *Ville :* ${customer?.city || 'Douala'} (${customer?.quarter || 'Non précisé'})\n`;
   if (deliveryNote) {
-    text += `▫️ *Note de livraison :* _${deliveryNote}_\n`;
+    text += `• *Note de livraison :* _${deliveryNote}_\n`;
   }
   text += `\n════════════════════════════════\n\n`;
 
-  text += `📦 *ARTICLES COMMANDÉS :*\n`;
+  text += `*ARTICLES COMMANDÉS :*\n`;
   items.forEach((item, idx) => {
     const unitPrice = item.price || 0;
     const finalItemPrice = item.discountedPrice !== undefined ? item.discountedPrice : (unitPrice * item.quantity);
     
     text += `*${idx + 1}. ${item.name}*\n`;
-    text += `   ▫️ Quantité : *${item.quantity}*\n`;
-    text += `   ▫️ Prix unitaire : ${unitPrice.toLocaleString('fr-FR')} FCFA\n`;
+    text += `   • Quantité : *${item.quantity}*\n`;
+    text += `   • Prix unitaire : ${unitPrice.toLocaleString('fr-FR')} FCFA\n`;
     if (item.discountPercent && item.discountPercent > 0) {
-      text += `   ▫️ Remise Grossiste appliquée : *-${item.discountPercent}%*\n`;
+      text += `   • Remise Grossiste appliquée : *-${item.discountPercent}%*\n`;
     }
-    text += `   ▫️ Sous-total : *${finalItemPrice.toLocaleString('fr-FR')} FCFA*\n\n`;
+    text += `   • Sous-total : *${finalItemPrice.toLocaleString('fr-FR')} FCFA*\n\n`;
   });
 
   text += `════════════════════════════════\n`;
-  text += `💰 *TOTAL COLIS :* *${total.toLocaleString('fr-FR')} FCFA*\n`;
-  text += `⚡ *Mode :* Livraison Express Urbaine (< 2h)\n`;
-  text += `💳 *Paiement :* À la livraison ou Mobile Money\n\n`;
-  text += `🚀 _Commande envoyée en direct via MeetShop Live Marketplace_`;
+  text += `*TOTAL COLIS :* *${total.toLocaleString('fr-FR')} FCFA*\n`;
+  text += `*Mode :* Livraison Express Urbaine (< 2h)\n`;
+  text += `*Paiement :* À la livraison ou Mobile Money\n\n`;
+  text += `_Commande transmise via MeetShop Live Marketplace_`;
 
   const encodedUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   return {
@@ -77,11 +77,11 @@ export function contactCustomerWhatsApp(customerPhone, orderId, status, shopName
 
   let msg = `Bonjour ! C'est la boutique *${shopName || 'MeetShop'}* concernant votre commande *#${orderId}*.\n`;
   if (status === 'livraison') {
-    msg += `🛵 Votre colis est actuellement *en cours d'acheminement* par notre livreur. Êtes-vous disponible pour la réception ?`;
+    msg += `Votre colis est actuellement *en cours d'acheminement* par notre livreur. Êtes-vous disponible pour la réception ?`;
   } else if (status === 'terminee') {
-    msg += `✅ Votre commande a bien été *livrée*. Merci pour votre confiance et à très bientôt sur MeetShop !`;
+    msg += `Votre commande a bien été *livrée*. Merci pour votre confiance et à très bientôt sur MeetShop !`;
   } else {
-    msg += `📦 Nous avons bien reçu votre commande et nous la préparons actuellement pour l'expédition.`;
+    msg += `Nous avons bien reçu votre commande et nous la préparons actuellement pour l'expédition.`;
   }
 
   window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');

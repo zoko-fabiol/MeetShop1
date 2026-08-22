@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Calendar,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  User
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { contactCustomerWhatsApp } from '../../services/whatsappService';
@@ -236,8 +237,9 @@ export default function VendorOrdersTab({ vendor }) {
                   
                   {/* Coordonnées Client */}
                   <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 space-y-2 text-xs">
-                    <span className="font-bold text-slate-900 dark:text-white block">
-                      👤 Coordonnées de Livraison
+                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Coordonnées de Livraison</span>
                     </span>
                     <div className="space-y-1 text-slate-600 dark:text-slate-400">
                       <p><span className="font-semibold text-slate-900 dark:text-white">Nom :</span> {order.customer?.name || 'Client MeetShop'}</p>
@@ -272,8 +274,9 @@ export default function VendorOrdersTab({ vendor }) {
                   {/* Articles de la boutique */}
                   <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 flex flex-col justify-between text-xs space-y-2">
                     <div>
-                      <span className="font-bold text-slate-900 dark:text-white block mb-2">
-                        📦 Articles Commandés
+                      <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-2">
+                        <Package className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Articles Commandés</span>
                       </span>
                       <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                         {order.items?.map((it, idx) => (

@@ -61,27 +61,27 @@ export function updateLeadStatus(shopId, leadId, newStatus) {
 export function formatWhatsAppFormSubmission({ shopPhone, shopName, formTitle, customerInfo, answers }) {
   const cleanPhone = (shopPhone || '+237699123456').replace(/\D/g, '');
 
-  let text = `📋 *NOUVEAU QUESTIONNAIRE REÇU — MEETSHOP*\n`;
-  text += `🏬 *Boutique :* *${shopName || 'MeetShop'}*\n`;
-  text += `📝 *Formulaire :* _${formTitle || 'Questionnaire'}\n`;
+  let text = `*NOUVEAU QUESTIONNAIRE REÇU — MEETSHOP*\n`;
+  text += `*Boutique :* *${shopName || 'MeetShop'}*\n`;
+  text += `*Formulaire :* _${formTitle || 'Questionnaire'}_\n`;
   text += `════════════════════════════════\n\n`;
 
   if (customerInfo && (customerInfo.name || customerInfo.phone)) {
-    text += `👤 *INFORMATIONS DU CONTACT :*\n`;
-    if (customerInfo.name) text += `▫️ *Nom :* ${customerInfo.name}\n`;
-    if (customerInfo.phone) text += `▫️ *Téléphone :* ${customerInfo.phone}\n`;
-    if (customerInfo.city) text += `▫️ *Ville :* ${customerInfo.city} ${customerInfo.quarter ? '(' + customerInfo.quarter + ')' : ''}\n`;
+    text += `*INFORMATIONS DU CONTACT :*\n`;
+    if (customerInfo.name) text += `• *Nom :* ${customerInfo.name}\n`;
+    if (customerInfo.phone) text += `• *Téléphone :* ${customerInfo.phone}\n`;
+    if (customerInfo.city) text += `• *Ville :* ${customerInfo.city} ${customerInfo.quarter ? '(' + customerInfo.quarter + ')' : ''}\n`;
     text += `\n════════════════════════════════\n\n`;
   }
 
-  text += `💡 *RÉPONSES DU QUESTIONNAIRE :*\n\n`;
+  text += `*RÉPONSES DU QUESTIONNAIRE :*\n\n`;
   answers.forEach((item, idx) => {
     text += `*${idx + 1}. ${item.question}*\n`;
-    text += `👉 *Réponse :* ${item.answer || 'Non précisé'}\n\n`;
+    text += `• *Réponse :* ${item.answer || 'Non précisé'}\n\n`;
   });
 
   text += `════════════════════════════════\n`;
-  text += `🚀 _Envoyé en direct depuis la vitrine MeetShop_`;
+  text += `_Transmis en direct depuis la vitrine MeetShop_`;
 
   const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   return { url, cleanPhone, text };

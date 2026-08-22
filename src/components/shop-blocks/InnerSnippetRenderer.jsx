@@ -185,7 +185,7 @@ export default function InnerSnippetRenderer({
             </div>
           </div>
           <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${dv.accentBadgeClass}`}>
-            ★ 100% Recommandé
+            100% Recommandé
           </span>
         </div>
       )}
@@ -430,8 +430,8 @@ export default function InnerSnippetRenderer({
       {snippetType === 'badge_cta' && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase ${dv.accentBadgeClass} animate-bounce`}>
-              ⚡ Spécial
+            <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase ${dv.accentBadgeClass}`}>
+              Spécial
             </span>
             <div>
               <h4 style={titleStyle} className={`text-xs sm:text-sm ${dv.headerClass}`}>Offre Limitée du Jour</h4>
@@ -492,8 +492,9 @@ export default function InnerSnippetRenderer({
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${dv.accentBadgeClass}`}>Direct WhatsApp</span>
           </div>
           {feedbackSent ? (
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center">
-              ✓ Demande envoyée ! Nous vous recontactons immédiatement.
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-500" />
+              <span>Demande envoyée ! Nous vous recontactons immédiatement.</span>
             </div>
           ) : (
             <div className="flex items-center gap-2">

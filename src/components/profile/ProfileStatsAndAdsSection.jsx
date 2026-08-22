@@ -426,7 +426,7 @@ function StatsContent({ vendor, products, onOpenStorefront, orders = [] }) {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors cursor-pointer"
                 >
                   <option value={1000}>1 000 FCFA / jour (Starter)</option>
-                  <option value={2500}>2 500 FCFA / jour (Recommandé ⭐)</option>
+                  <option value={2500}>2 500 FCFA / jour (Recommandé)</option>
                   <option value={5000}>5 000 FCFA / jour (Pro Performance)</option>
                   <option value={10000}>10 000 FCFA / jour (Ultra Boost)</option>
                 </select>

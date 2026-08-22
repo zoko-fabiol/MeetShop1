@@ -307,10 +307,10 @@ export default function OdooQuickProductModal({
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors cursor-pointer"
               >
                 <option value="Nouveau">Nouveau</option>
-                <option value="Bestseller">Bestseller 🔥</option>
+                <option value="Bestseller">Bestseller</option>
                 <option value="Promo -25%">Promo -25%</option>
-                <option value="Coup de cœur">Coup de cœur ❤️</option>
-                <option value="Stock Limité">Stock Limité ⚠️</option>
+                <option value="Coup de cœur">Coup de cœur</option>
+                <option value="Stock Limité">Stock Limité</option>
                 <option value="">Aucun badge</option>
               </select>
             </div>
@@ -381,7 +381,7 @@ export default function OdooQuickProductModal({
               <div className="mt-3 space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
                   <span>{images.length} photo{images.length > 1 ? 's' : ''} sur {MAX_IMAGES}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-normal">⭐ Cliquez sur l'étoile pour définir la photo principale</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-normal">Cliquez sur l'étoile pour définir la photo principale</span>
                 </div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">

@@ -788,8 +788,8 @@ export default function BlockConfigModal({ block, shop, products = [], themeId, 
                             </p>
                           </div>
                           {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs shrink-0 font-bold">
-                              ✓
+                            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                              <Check className="w-3 h-3" />
                             </span>
                           )}
                         </div>
@@ -1320,9 +1320,9 @@ export default function BlockConfigModal({ block, shop, products = [], themeId, 
                             onChange={(e) => handleReviewChange(index, 'rating', parseInt(e.target.value, 10))}
                             className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                           >
-                            <option value={5}>⭐⭐⭐⭐⭐ (5 / 5 - Excellent)</option>
-                            <option value={4}>⭐⭐⭐⭐ (4 / 5 - Très bon)</option>
-                            <option value={3}>⭐⭐⭐ (3 / 5 - Moyen)</option>
+                            <option value={5}>5 / 5 - Excellent</option>
+                            <option value={4}>4 / 5 - Très bon</option>
+                            <option value={3}>3 / 5 - Moyen</option>
                           </select>
                         </div>
 

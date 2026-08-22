@@ -317,11 +317,11 @@ export default function ShopCatalogPage({
                     onChange={(e) => setSortBy(e.target.value)}
                     className="appearance-none pl-3 pr-8 py-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-current/15 text-xs font-bold text-current focus:outline-none cursor-pointer"
                   >
-                    <option value="featured">✨ Mis en avant</option>
-                    <option value="price_asc">📈 Prix : Moins cher</option>
-                    <option value="price_desc">📉 Prix : Plus cher</option>
-                    <option value="newest">🔥 Nouveautés</option>
-                    <option value="discount">⚡ Plus fortes remises</option>
+                    <option value="featured">Mis en avant (Recommandé)</option>
+                    <option value="price_asc">Prix : Croissant</option>
+                    <option value="price_desc">Prix : Décroissant</option>
+                    <option value="newest">Nouveautés récentes</option>
+                    <option value="discount">Plus fortes remises</option>
                   </select>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>

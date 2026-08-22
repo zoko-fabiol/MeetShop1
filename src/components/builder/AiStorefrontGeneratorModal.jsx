@@ -584,7 +584,7 @@ export default function AiStorefrontGeneratorModal({
                     }`}
                   >
                     <div>
-                      <span className="text-xs font-black text-slate-900 dark:text-white block">✨ Auto (Recommandé)</span>
+                      <span className="text-xs font-black text-slate-900 dark:text-white block">Auto (Recommandé)</span>
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 block">L'IA choisit le meilleur style selon votre secteur</span>
                     </div>
                     {selectedDesignVariant === 'auto' && <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 ml-1" />}

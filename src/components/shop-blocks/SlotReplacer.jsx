@@ -23,6 +23,7 @@ import {
   CheckSquare,
   Sliders,
   Check,
+  X,
   ChevronDown,
   ArrowUp,
   ArrowDown,
@@ -386,7 +387,7 @@ export default function SlotReplacer({
         >
           <div className="col-span-2 px-1 py-0.5 text-[9px] font-mono text-slate-400 flex items-center justify-between border-b border-slate-800 mb-1">
             <span>Remplacer {slotLabel} par :</span>
-            <button type="button" onClick={() => setShowPicker(false)} className="text-slate-500 hover:text-white">✕</button>
+            <button type="button" onClick={() => setShowPicker(false)} className="text-slate-500 hover:text-white p-0.5"><X className="w-3 h-3" /></button>
           </div>
           {ODOO_INNER_SNIPPETS.map((snip) => {
             const Icon = snip.icon;

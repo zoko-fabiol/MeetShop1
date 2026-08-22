@@ -15,7 +15,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  Check
+  Check,
+  Package
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -309,8 +310,9 @@ export default function CheckoutSummaryModal({ isOpen, onClose }) {
             {/* ── SÉPARATION PAR COLIS / BOUTIQUES ── */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                  📦 Détail des Colis ({shopKeysList.length})
+                <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-emerald-500" />
+                  <span>Détail des Colis ({shopKeysList.length})</span>
                 </span>
                 <span className="text-xs font-semibold text-slate-500">
                   Total Panier : <strong className="text-emerald-600 dark:text-emerald-400 text-sm font-black">{grandTotal.toLocaleString('fr-FR')} FCFA</strong>
