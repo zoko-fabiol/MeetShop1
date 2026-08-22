@@ -174,6 +174,10 @@ export default function ShopCatalogPage({
     });
   }, [shopProducts, searchQuery, selectedCategory, userSelectedMaxPrice, onlyInStock, onlyOnSale, sortBy]);
 
+  const handlePriceRangeChange = (newRange) => {
+    setUserSelectedMaxPrice(newRange ? newRange[1] : null);
+  };
+
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('all');
@@ -261,7 +265,7 @@ export default function ShopCatalogPage({
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               priceRange={priceRange}
-              onPriceRangeChange={setPriceRange}
+              onPriceRangeChange={handlePriceRangeChange}
               maxPriceLimit={maxPriceLimit}
               onlyInStock={onlyInStock}
               onToggleInStock={setOnlyInStock}
@@ -589,7 +593,7 @@ export default function ShopCatalogPage({
                 setIsMobileFilterOpen(false);
               }}
               priceRange={priceRange}
-              onPriceRangeChange={setPriceRange}
+              onPriceRangeChange={handlePriceRangeChange}
               maxPriceLimit={maxPriceLimit}
               onlyInStock={onlyInStock}
               onToggleInStock={setOnlyInStock}
