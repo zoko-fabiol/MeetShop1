@@ -64,6 +64,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { THEME_PALETTES_LIST, getTheme } from '../../config/themes';
+import { AVAILABLE_BLOCKS, ODOO_SHOP_TEMPLATES } from '../../config/shopBlocks';
 import { BLOCK_DESIGN_VARIANTS } from '../../config/blockDesignStyles';
 import { 
   SNIPPET_SHAPES, 
