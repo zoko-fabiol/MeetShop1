@@ -126,8 +126,10 @@ export default function ShopCatalogPage({
     };
   }, [shopProducts]);
 
-  // Price range state
-  const [priceRange, setPriceRange] = useState([0, maxPriceLimit]);
+  // Price range state (curseur utilisateur optionnel)
+  const [userSelectedMaxPrice, setUserSelectedMaxPrice] = useState(null);
+  const currentMaxPrice = userSelectedMaxPrice !== null ? userSelectedMaxPrice : maxPriceLimit;
+  const priceRange = [0, currentMaxPrice];
 
   // Filtered & Sorted Products
   const filteredProducts = useMemo(() => {
@@ -141,17 +143,19 @@ export default function ShopCatalogPage({
         if (!matchesName && !matchesDesc && !matchesCat) return false;
       }
 
-      // Category
-      if (selectedCategory !== 'all') {
-        if ((p.category || '') !== selectedCategory) return false;
+      // Category (Insensible à la casse)
+      if (selectedCategory && selectedCategory !== 'all') {
+        const pCat = (p.category || '').trim().toLowerCase();
+        const sCat = selectedCategory.trim().toLowerCase();
+        if (pCat !== sCat && (p.category || '') !== selectedCategory) return false;
       }
 
-      // Price Range
+      // Price Range (Seulement si l'utilisateur a manipulé le filtre de prix)
       const price = Number(p.price) || 0;
-      if (price > priceRange[1]) return false;
+      if (userSelectedMaxPrice !== null && price > userSelectedMaxPrice) return false;
 
       // In Stock
-      if (onlyInStock && p.stock !== undefined && p.stock <= 0) return false;
+      if (onlyInStock && p.stock !== undefined && Number(p.stock) <= 0) return false;
 
       // On Sale
       if (onlyOnSale && (!p.old_price || Number(p.old_price) <= price)) return false;
@@ -168,12 +172,12 @@ export default function ShopCatalogPage({
       }
       return 0; // 'featured'
     });
-  }, [shopProducts, searchQuery, selectedCategory, priceRange, onlyInStock, onlyOnSale, sortBy]);
+  }, [shopProducts, searchQuery, selectedCategory, userSelectedMaxPrice, onlyInStock, onlyOnSale, sortBy]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('all');
-    setPriceRange([0, maxPriceLimit]);
+    setUserSelectedMaxPrice(null);
     setOnlyInStock(false);
     setOnlyOnSale(false);
   };

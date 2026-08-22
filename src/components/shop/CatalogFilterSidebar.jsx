@@ -20,6 +20,7 @@ export default function CatalogFilterSidebar({
   priceRange = [0, 500000],
   maxPriceLimit = 500000,
   onPriceChange,
+  onPriceRangeChange,
   onlyInStock = false,
   onToggleInStock,
   onlyOnSale = false,
@@ -32,6 +33,7 @@ export default function CatalogFilterSidebar({
   onCloseMobileDrawer
 }) {
   const theme = getTheme(themeId);
+  const handlePriceUpdate = onPriceRangeChange || onPriceChange;
 
   const hasActiveFilters = 
     selectedCategory !== 'all' || 
@@ -134,7 +136,7 @@ export default function CatalogFilterSidebar({
           max={maxPriceLimit > 0 ? maxPriceLimit : 500000}
           step="500"
           value={priceRange[1]}
-          onChange={(e) => onPriceChange([priceRange[0], Number(e.target.value)])}
+          onChange={(e) => handlePriceUpdate?.([priceRange[0], Number(e.target.value)])}
           className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-600"
         />
 
