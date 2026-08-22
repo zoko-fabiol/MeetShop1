@@ -143,7 +143,7 @@ export default function ShopBuilder({
   // Helper to count published reviews for this shop
   const getShopReviewsCount = () => {
     try {
-      const saved = localStorage.getItem(`meetshop_shop_reviews_${vendor?.id || vendor?.code || 'default'}`);
+      const saved = localStorage.getItem(`meetshop_shop_reviews_${shop?.id || shop?.code || 'default'}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed.length;
