@@ -670,4 +670,24 @@ export async function updateShopLayout(shopId, layoutConfig, extraFields = {}) {
   return updatedShops;
 }
 
+export async function deleteProductFromLocalAndCloud(productId) {
+  if (!productId) return [];
+
+  // 1. Supabase deletion
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('products').delete().eq('id', productId);
+    } catch (err) {
+      console.warn('Erreur suppression produit Supabase:', err);
+    }
+  }
+
+  // 2. LocalStorage deletion
+  const current = JSON.parse(localStorage.getItem('meetshop_products') || '[]');
+  const updated = current.filter(p => p.id !== productId);
+  localStorage.setItem('meetshop_products', JSON.stringify(updated));
+  return updated;
+}
+
+
 

@@ -30,7 +30,7 @@ import { getDefaultLayoutConfig, AVAILABLE_BLOCKS } from '../config/shopBlocks';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { updateShopLayout, saveNewProduct } from '../services/productsService';
+import { updateShopLayout, saveNewProduct, deleteProductFromLocalAndCloud } from '../services/productsService';
 import BlockConfigModal from './builder/BlockConfigModal';
 import AiBlockModifierModal from './builder/AiBlockModifierModal';
 import AiStorefrontGeneratorModal from './builder/AiStorefrontGeneratorModal';
@@ -257,6 +257,17 @@ function ShopStorefrontInner({
     } catch (err) {
       console.error('Erreur lors de l\'enregistrement du produit:', err);
       setShopProductsList(prev => [newProduct, ...prev]);
+    }
+  };
+
+  const handleDeleteProductDirectly = async (productId) => {
+    try {
+      await deleteProductFromLocalAndCloud(productId);
+      setShopProductsList(prev => prev.filter(p => p.id !== productId));
+      setSaveToast('Produit retiré de votre boutique avec succès !');
+      setTimeout(() => setSaveToast(''), 4000);
+    } catch (err) {
+      console.error('Erreur suppression produit:', err);
     }
   };
 
@@ -748,9 +759,16 @@ function ShopStorefrontInner({
                   isEditMode={true}
                   isOwner={isOwner}
                   onAddProduct={handleAddProductDirectly}
+                  onDeleteProduct={handleDeleteProductDirectly}
                   onSelectProduct={onSelectProduct}
                   onOpenWhatsApp={handleWhatsApp}
                   initialCategory={catalogCategory}
+                  onUpdateCatalogConfig={(catalogConfig) => {
+                    const newConfig = { ...currentLayout, catalog_config: catalogConfig };
+                    setCurrentLayout(newConfig);
+                    updateShopLayout(shop?.id || shop?.code, newConfig);
+                    if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                  }}
                   onUpdateTemplate={(tmplId) => {
                     const newConfig = { ...currentLayout, shop_template: tmplId };
                     setCurrentLayout(newConfig);
@@ -835,9 +853,16 @@ function ShopStorefrontInner({
                 isEditMode={false}
                 isOwner={isOwner}
                 onAddProduct={handleAddProductDirectly}
+                onDeleteProduct={handleDeleteProductDirectly}
                 onSelectProduct={onSelectProduct}
                 onOpenWhatsApp={handleWhatsApp}
                 initialCategory={catalogCategory}
+                onUpdateCatalogConfig={(catalogConfig) => {
+                  const newConfig = { ...currentLayout, catalog_config: catalogConfig };
+                  setCurrentLayout(newConfig);
+                  updateShopLayout(shop?.id || shop?.code, newConfig);
+                  if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                }}
                 onUpdateTemplate={(tmplId) => {
                   const newConfig = { ...currentLayout, shop_template: tmplId };
                   setCurrentLayout(newConfig);

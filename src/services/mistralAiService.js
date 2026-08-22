@@ -464,3 +464,49 @@ export async function modifyCustomBlockWithMistral({ block = {}, modificationPro
     subtitle: modificationPrompt || props.subtitle || 'Service rapide et produits certifiés'
   };
 }
+
+/**
+ * Synchronise et harmonise automatiquement le design du catalogue de produits
+ * avec la direction artistique et l'univers graphique de la page d'accueil.
+ */
+export async function syncCatalogDesignWithShopTheme({ shop = {}, currentLayout = {} }) {
+  const themeId = currentLayout.theme || shop?.layout_config?.theme || 'emerald';
+  const designVariant = currentLayout.designVariant || shop?.layout_config?.designVariant || 'modern_minimal';
+  const shopName = shop?.name || 'Notre Boutique';
+  
+  let cardStyle = 'modern';
+  let layoutGrid = 'grid_3';
+  let headerBannerStyle = 'gradient_glow';
+
+  if (designVariant === 'luxury_editorial' || designVariant === 'nordic_scandi') {
+    cardStyle = 'luxury';
+    layoutGrid = 'grid_3';
+    headerBannerStyle = 'minimal_luxury';
+  } else if (designVariant === 'neo_brutalism_bold' || designVariant === 'streetwear_tokyo') {
+    cardStyle = 'neo_brutalist';
+    layoutGrid = 'grid_4';
+    headerBannerStyle = 'neo_brutalist';
+  } else if (designVariant === 'cyber_tech_dark' || designVariant === 'neon_cyber') {
+    cardStyle = 'glassmorphism';
+    layoutGrid = 'grid_4';
+    headerBannerStyle = 'cyber_glow';
+  } else if (designVariant === 'sunset_warm_gradient' || designVariant === 'nature_organic') {
+    cardStyle = 'modern';
+    layoutGrid = 'grid_3';
+    headerBannerStyle = 'warm_gradient';
+  } else {
+    cardStyle = 'modern';
+    layoutGrid = 'grid_3';
+    headerBannerStyle = 'gradient_glow';
+  }
+
+  return {
+    theme: themeId,
+    designVariant: designVariant,
+    cardStyle: cardStyle,
+    layoutGrid: layoutGrid,
+    headerBannerStyle: headerBannerStyle,
+    customTitle: `Catalogue Officiel ${shopName}`,
+    customSubtitle: `Découvrez tous les articles certifiés disponibles immédiatement à ${shop?.city || 'Douala'}.`
+  };
+}

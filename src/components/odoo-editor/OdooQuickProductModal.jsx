@@ -22,6 +22,7 @@ export default function OdooQuickProductModal({
   isOpen,
   onClose,
   onAddProduct,
+  initialProduct = null,
   shop,
   themeId = 'emerald',
   existingCategories = []
@@ -29,7 +30,9 @@ export default function OdooQuickProductModal({
   const theme = getTheme(themeId);
   const fileInputRef = useRef(null);
 
+  const isEdit = Boolean(initialProduct && initialProduct.id);
   const MAX_IMAGES = 5;
+
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [oldPrice, setOldPrice] = useState('');
@@ -43,6 +46,35 @@ export default function OdooQuickProductModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+
+  // Synchronisation lors de l'ouverture ou modification de initialProduct
+  React.useEffect(() => {
+    if (initialProduct) {
+      setName(initialProduct.name || '');
+      setPrice(initialProduct.price != null ? String(initialProduct.price) : '');
+      setOldPrice(initialProduct.old_price != null ? String(initialProduct.old_price) : '');
+      setCategory(initialProduct.category || existingCategories[0] || 'Général');
+      setDescription(initialProduct.description || '');
+      setStock(initialProduct.stock != null ? String(initialProduct.stock) : '10');
+      setBadge(initialProduct.badge || '');
+      const existingImgs = Array.isArray(initialProduct.image_urls) && initialProduct.image_urls.length > 0
+        ? initialProduct.image_urls
+        : (initialProduct.image_url ? [initialProduct.image_url] : (initialProduct.image ? [initialProduct.image] : []));
+      setImages(existingImgs);
+      setCoverIndex(0);
+    } else {
+      setName('');
+      setPrice('');
+      setOldPrice('');
+      setCategory(existingCategories[0] || 'Vêtements');
+      setCustomCategory('');
+      setImages([]);
+      setCoverIndex(0);
+      setDescription('');
+      setStock('10');
+      setBadge('Nouveau');
+    }
+  }, [initialProduct, isOpen]);
 
   if (!isOpen) return null;
 
@@ -137,16 +169,19 @@ export default function OdooQuickProductModal({
     const finalCategory = customCategory.trim() || category || 'Général';
     const mainImage = images[coverIndex] || images[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80';
 
-    const newProduct = {
-      id: `prod-${Date.now()}`,
+    const productPayload = {
+      ...(initialProduct || {}),
+      id: initialProduct?.id || `prod-${Date.now()}`,
       name: name.trim(),
       price: numPrice,
       old_price: oldPrice ? Number(oldPrice) : null,
       category: finalCategory,
       image: mainImage,
+      image_url: mainImage,
       images: images.length > 0 ? images : [mainImage],
+      image_urls: images.length > 0 ? images : [mainImage],
       description: description.trim() || `Article certifié de qualité disponible chez ${shop?.name}.`,
-      stock: Number(stock) || 10,
+      stock: Number(stock) || 0,
       badge: badge.trim() || null,
       isNew: badge === 'Nouveau',
       shopId: shop?.id || shop?.code,
@@ -154,11 +189,12 @@ export default function OdooQuickProductModal({
       shopCode: shop?.code,
       shopName: shop?.name,
       vendor_id: shop?.id || shop?.seller_id || shop?.owner_uid,
-      created_at: new Date().toISOString()
+      created_at: initialProduct?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     try {
-      await onAddProduct?.(newProduct);
+      await onAddProduct?.(productPayload);
       onClose();
     } catch (err) {
       console.error(err);
@@ -180,13 +216,13 @@ export default function OdooQuickProductModal({
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black flex items-center gap-2 text-slate-900 dark:text-white">
-                <span>Ajouter un Produit style Odoo</span>
+                <span>{isEdit ? 'Modifier le Produit' : 'Ajouter un Produit'}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold border border-emerald-500/20">
                   {shop?.name}
                 </span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Insertion directe et instantanée dans votre vitrine
+                {isEdit ? 'Mise à jour en direct de votre catalogue' : 'Insertion directe et instantanée dans votre vitrine'}
               </p>
             </div>
           </div>
@@ -488,7 +524,7 @@ export default function OdooQuickProductModal({
             ) : (
               <PackageCheck className="w-4 h-4" />
             )}
-            <span>Insérer dans la Boutique</span>
+            <span>{isEdit ? 'Enregistrer les Modifications' : 'Insérer dans la Boutique'}</span>
           </button>
         </div>
 

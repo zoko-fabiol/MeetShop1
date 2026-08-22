@@ -30,13 +30,21 @@ import {
   Palette,
   CheckCircle2,
   PackagePlus,
-  Edit3
+  Edit3,
+  Trash2,
+  Sliders,
+  Wand2,
+  RefreshCw,
+  AlertTriangle,
+  PackageCheck,
+  ShieldCheck
 } from 'lucide-react';
 import { getTheme } from '../../config/themes';
 import { useCart } from '../../context/CartContext';
 import { getDesignVariant } from '../../config/blockDesignStyles';
 import { getCustomColorStyle } from '../../config/colorTokens';
 import { ODOO_SHOP_TEMPLATES } from '../../config/shopBlocks';
+import { syncCatalogDesignWithShopTheme } from '../../services/mistralAiService';
 import CatalogCategoryPills from './CatalogCategoryPills';
 import CatalogFilterSidebar from './CatalogFilterSidebar';
 import OdooQuickProductModal from '../odoo-editor/OdooQuickProductModal';
@@ -51,13 +59,37 @@ export default function ShopCatalogPage({
   onSelectProduct,
   onOpenWhatsApp,
   onAddProduct,
+  onDeleteProduct,
   initialCategory = 'all',
   templateOverride = null,
-  onUpdateTemplate = null
+  onUpdateTemplate = null,
+  onUpdateCatalogConfig = null
 }) {
   const theme = getTheme(themeId);
   const { addToCart, items: cartItems } = useCart();
   const dv = getDesignVariant(designVariant || shop?.layout_config?.designVariant || 'modern_minimal');
+
+  // Configuration personnalisée du catalogue (sauvegardée dans layout_config.catalog_config)
+  const savedCatalogConfig = shop?.layout_config?.catalog_config || {};
+  const [catalogCardStyle, setCatalogCardStyle] = useState(savedCatalogConfig.cardStyle || 'modern');
+  const [isAiSyncing, setIsAiSyncing] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Modal d'insertion & édition de produit
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [productToDelete, setProductToDelete] = useState(null);
+
+  // States de recherche & filtres
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
+  const [sortBy, setSortBy] = useState('featured'); // 'featured' | 'price_asc' | 'price_desc' | 'newest' | 'discount'
+  const [layoutMode, setLayoutMode] = useState(savedCatalogConfig.layoutGrid || 'grid_3'); // 'grid_4' | 'grid_3' | 'list'
+  const [onlyInStock, setOnlyInStock] = useState(false);
+  const [onlyOnSale, setOnlyOnSale] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [addedProductId, setAddedProductId] = useState(null);
+  const [wishlist, setWishlist] = useState({});
 
   // Filtrage strict : Ne garder QUE les produits appartenant à cette boutique
   const shopProducts = useMemo(() => {
@@ -84,24 +116,86 @@ export default function ShopCatalogPage({
   const activeTemplateId = templateOverride || shop?.layout_config?.shop_template || 'odoo_fashion';
   const [currentTemplate, setCurrentTemplate] = useState(activeTemplateId);
 
-  // Modal d'insertion rapide de produit style Odoo
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-
-  // States
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
-  const [sortBy, setSortBy] = useState('featured'); // 'featured' | 'price_asc' | 'price_desc' | 'newest' | 'discount'
-  const [layoutMode, setLayoutMode] = useState('grid_3'); // 'grid_4' | 'grid_3' | 'list'
-  const [onlyInStock, setOnlyInStock] = useState(false);
-  const [onlyOnSale, setOnlyOnSale] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [addedProductId, setAddedProductId] = useState(null);
-  const [wishlist, setWishlist] = useState({});
-
   const toggleWishlist = (productId, e) => {
     e?.stopPropagation();
     if (isEditMode) return;
     setWishlist(prev => ({ ...prev, [productId]: !prev[productId] }));
+  };
+
+  // Synchronisation intelligente du design du catalogue via l'IA
+  const handleSyncDesignWithAi = async () => {
+    setIsAiSyncing(true);
+    try {
+      const syncedStyles = await syncCatalogDesignWithShopTheme({ shop, currentLayout: shop?.layout_config });
+      if (syncedStyles.cardStyle) {
+        setCatalogCardStyle(syncedStyles.cardStyle);
+      }
+      if (syncedStyles.layoutGrid) {
+        setLayoutMode(syncedStyles.layoutGrid);
+      }
+      onUpdateCatalogConfig?.({
+        cardStyle: syncedStyles.cardStyle,
+        layoutGrid: syncedStyles.layoutGrid,
+        synced_at: new Date().toISOString()
+      });
+      setToastMessage('✨ Design du catalogue harmonisé avec succès avec votre vitrine !');
+      setTimeout(() => setToastMessage(''), 4000);
+    } catch (err) {
+      console.warn('Erreur synchronisation IA catalogue:', err);
+    } finally {
+      setIsAiSyncing(false);
+    }
+  };
+
+  // Modification du style de cartes
+  const handleCardStyleChange = (styleKey) => {
+    setCatalogCardStyle(styleKey);
+    onUpdateCatalogConfig?.({
+      cardStyle: styleKey,
+      layoutGrid: layoutMode,
+      updated_at: new Date().toISOString()
+    });
+  };
+
+  // Basculement rapide du stock d'un produit (En stock <-> Rupture)
+  const handleToggleStockDirectly = async (product, e) => {
+    e?.stopPropagation();
+    const currentStock = Number(product.stock) || 0;
+    const newStock = currentStock > 0 ? 0 : 10;
+    const updatedProd = {
+      ...product,
+      stock: newStock,
+      is_available: newStock > 0
+    };
+    await onAddProduct?.(updatedProd);
+    setToastMessage(`Stock de "${product.name}" mis à jour : ${newStock > 0 ? 'En stock' : 'Rupture de stock'}`);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  // Clic sur l'édition d'un produit
+  const handleEditProductClick = (product, e) => {
+    e?.stopPropagation();
+    setEditingProduct(product);
+    setIsAddProductOpen(true);
+  };
+
+  // Confirmation de suppression
+  const handleDeleteProductClick = (product, e) => {
+    e?.stopPropagation();
+    setProductToDelete(product);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    try {
+      await onDeleteProduct?.(productToDelete.id);
+      setToastMessage(`Produit "${productToDelete.name}" supprimé.`);
+      setTimeout(() => setToastMessage(''), 3500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setProductToDelete(null);
+    }
   };
 
   // Extraire les catégories uniques de la boutique
@@ -197,6 +291,14 @@ export default function ShopCatalogPage({
   return (
     <div className={`w-full min-h-screen pb-20 transition-all duration-300 ${dv.containerClass || 'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white'}`}>
       
+      {/* Toast de Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-emerald-600 text-white text-xs font-black shadow-2xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════════════
           EN-TÊTE DE LA BOUTIQUE (HARMONISÉ AVEC LE THÈME)
          ═══════════════════════════════════════════════════════ */}
@@ -221,11 +323,14 @@ export default function ShopCatalogPage({
               </div>
             </div>
 
-            {/* Bouton style Odoo d'ajout de produit rapide */}
+            {/* Bouton d'ajout de produit rapide */}
             {(isOwner || isEditMode) && (
               <button
                 type="button"
-                onClick={() => setIsAddProductOpen(true)}
+                onClick={() => {
+                  setEditingProduct(null);
+                  setIsAddProductOpen(true);
+                }}
                 className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0"
                 title="Ajouter un nouveau produit directement dans cette boutique"
               >
@@ -235,6 +340,98 @@ export default function ShopCatalogPage({
             )}
           </div>
         </div>
+
+        {/* ═══════════════════════════════════════════════════════
+            BARRE D'OUTILS DU MODE MODIFICATION (COMMERÇANT & IA)
+           ═══════════════════════════════════════════════════════ */}
+        {(isOwner || isEditMode) && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-cyan-500/15 border-2 border-emerald-500/30 shadow-lg space-y-3 animate-fadeIn">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              
+              {/* Titre & Description */}
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Mode Modification du Catalogue</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-mono font-bold">
+                      Actif
+                    </span>
+                  </h2>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Modifiez, supprimez ou harmonisez le design de votre catalogue avec l'IA en direct.
+                  </p>
+                </div>
+              </div>
+
+              {/* Boutons d'Action IA & Produit */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSyncDesignWithAi}
+                  disabled={isAiSyncing}
+                  className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-xs font-black flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  title="Analyser la page d'accueil de la boutique et synchroniser automatiquement le design du catalogue"
+                >
+                  {isAiSyncing ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isAiSyncing ? 'Harmonisation IA...' : '✨ Synchroniser le Design via IA'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingProduct(null);
+                    setIsAddProductOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Nouveau Produit</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sélecteur de Variante de Cartes Produits */}
+            <div className="pt-3 border-t border-emerald-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  <Palette className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Design des Cartes :</span>
+                </span>
+                {[
+                  { id: 'modern', label: '🌟 Moderne' },
+                  { id: 'neo_brutalist', label: '⚡ Néo-Brutaliste' },
+                  { id: 'glassmorphism', label: '💎 Glassmorphism' },
+                  { id: 'luxury', label: '👑 Luxe Épuré' },
+                  { id: 'compact', label: '📦 Compact Marchand' }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => handleCardStyleChange(st.id)}
+                    className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                      catalogCardStyle === st.id
+                        ? 'bg-emerald-600 text-white shadow-sm scale-105'
+                        : 'bg-black/5 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-black/10 dark:hover:bg-white/20'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-semibold italic">
+                💡 Crayon pour modifier, Corbeille pour supprimer, Clic sur stock pour basculer.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* ═══════════════════════════════════════════════════════
             BANDEAU VISUEL DE CATÉGORIES
@@ -410,7 +607,10 @@ export default function ShopCatalogPage({
                 {/* Carte Rapide Ajouter un Produit (Style Odoo) */}
                 {(isOwner || isEditMode) && (
                   <div
-                    onClick={() => setIsAddProductOpen(true)}
+                    onClick={() => {
+                      setEditingProduct(null);
+                      setIsAddProductOpen(true);
+                    }}
                     className={`group/add cursor-pointer rounded-3xl border-2 border-dashed border-emerald-500/40 hover:border-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 p-6 flex flex-col items-center justify-center text-center transition-all min-h-[260px] shadow-sm hover:shadow-lg`}
                   >
                     <div className="w-14 h-14 rounded-2xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mb-3 group-hover/add:scale-110 transition-transform">
@@ -431,6 +631,19 @@ export default function ShopCatalogPage({
                     ? Math.round(((Number(prod.old_price) - Number(prod.price)) / Number(prod.old_price)) * 100)
                     : null;
                   const isJustAdded = addedProductId === prod.id;
+                  const inStock = Number(prod.stock) > 0;
+
+                  // Classes de style de carte dynamique
+                  let cardStyleClass = dv.cardInnerClass || 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white';
+                  if (catalogCardStyle === 'neo_brutalist') {
+                    cardStyleClass = 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-950 dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.9)] hover:translate-x-[-2px] hover:translate-y-[-2px]';
+                  } else if (catalogCardStyle === 'glassmorphism') {
+                    cardStyleClass = 'backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 border border-white/40 dark:border-white/10 text-slate-900 dark:text-white shadow-lg hover:shadow-2xl';
+                  } else if (catalogCardStyle === 'luxury') {
+                    cardStyleClass = 'bg-gradient-to-b from-slate-900 via-slate-950 to-black text-white border border-amber-500/30 shadow-2xl hover:border-amber-400';
+                  } else if (catalogCardStyle === 'compact') {
+                    cardStyleClass = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-sm';
+                  }
 
                   return (
                     <div
@@ -439,8 +652,30 @@ export default function ShopCatalogPage({
                         if (isEditMode) return;
                         onSelectProduct?.(prod);
                       }}
-                      className={`group/card rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer relative ${dv.cardInnerClass || 'bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white'}`}
+                      className={`group/card rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${cardStyleClass}`}
                     >
+                      {/* 🌟 ACTION BAR COMMERÇANT EN MODE ÉDITION */}
+                      {(isOwner || isEditMode) && (
+                        <div className="absolute top-2.5 right-2.5 z-30 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-2 py-1.5 rounded-2xl shadow-xl border border-slate-700/80">
+                          <button
+                            type="button"
+                            onClick={(e) => handleEditProductClick(prod, e)}
+                            className="p-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white transition-all cursor-pointer hover:scale-105"
+                            title="Modifier cet article (Nom, Prix, Photos...)"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteProductClick(prod, e)}
+                            className="p-1.5 rounded-xl bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white transition-all cursor-pointer hover:scale-105"
+                            title="Supprimer définitivement cet article"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+
                       {/* Image container */}
                       <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-3">
                         <img
@@ -464,19 +699,21 @@ export default function ShopCatalogPage({
                           )}
                         </div>
 
-                        {/* Wishlist Toggle */}
-                        <button
-                          type="button"
-                          onClick={(e) => toggleWishlist(prod.id, e)}
-                          className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform active:scale-90 ${
-                            isWishlisted
-                              ? 'bg-rose-500 text-white'
-                              : 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-400 hover:text-rose-500'
-                          }`}
-                          title="Ajouter aux favoris"
-                        >
-                          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                        </button>
+                        {/* Wishlist Toggle (En mode visiteur) */}
+                        {!isEditMode && !isOwner && (
+                          <button
+                            type="button"
+                            onClick={(e) => toggleWishlist(prod.id, e)}
+                            className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform active:scale-90 ${
+                              isWishlisted
+                                ? 'bg-rose-500 text-white'
+                                : 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-400 hover:text-rose-500'
+                            }`}
+                            title="Ajouter aux favoris"
+                          >
+                            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                          </button>
+                        )}
                       </div>
 
                       {/* Content details */}
@@ -504,42 +741,65 @@ export default function ShopCatalogPage({
                               )}
                             </div>
 
-                            {/* Stock badge */}
-                            <span className="text-[10px] font-bold text-emerald-500">
-                              En stock
-                            </span>
+                            {/* Stock badge avec basculement en 1 clic pour le propriétaire */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                if (isOwner || isEditMode) {
+                                  handleToggleStockDirectly(prod, e);
+                                }
+                              }}
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                                inStock
+                                  ? 'text-emerald-500 bg-emerald-500/10 border border-emerald-500/20'
+                                  : 'text-rose-500 bg-rose-500/10 border border-rose-500/20'
+                              } ${isOwner || isEditMode ? 'hover:scale-105 cursor-pointer ring-1 ring-transparent hover:ring-current' : ''}`}
+                              title={isOwner || isEditMode ? 'Cliquer pour basculer entre En Stock et Rupture' : undefined}
+                            >
+                              {inStock ? '● En stock' : '○ Rupture'}
+                            </button>
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-1.5 pt-1">
-                            <button
-                              type="button"
-                              onClick={(e) => handleAddToCart(prod, e)}
-                              className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer ${
-                                isJustAdded
-                                  ? 'bg-emerald-500 text-slate-950 font-black'
-                                  : `${dv.buttonClass || theme.btnPrimary}`
-                              }`}
-                            >
-                              {isJustAdded ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Ajouté !</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ShoppingBag className="w-3.5 h-3.5" />
-                                  <span>Ajouter</span>
-                                </>
-                              )}
-                            </button>
+                            {isEditMode || isOwner ? (
+                              <button
+                                type="button"
+                                onClick={(e) => handleEditProductClick(prod, e)}
+                                className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span>Modifier l'article</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => handleAddToCart(prod, e)}
+                                className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer ${
+                                  isJustAdded
+                                    ? 'bg-emerald-500 text-slate-950 font-black'
+                                    : `${dv.buttonClass || theme.btnPrimary}`
+                                }`}
+                              >
+                                {isJustAdded ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>Ajouté !</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ShoppingBag className="w-3.5 h-3.5" />
+                                    <span>Ajouter</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
 
                             {onOpenWhatsApp && (
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (isEditMode) return;
                                   onOpenWhatsApp(prod);
                                 }}
                                 className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer shrink-0"
@@ -608,15 +868,69 @@ export default function ShopCatalogPage({
         </div>
       )}
 
-      {/* ──── MODALE ODOO AJOUT PRODUIT RAPIDE ──── */}
+      {/* ──── MODALE ODOO AJOUT / ÉDITION DE PRODUIT RAPIDE ──── */}
       <OdooQuickProductModal
         isOpen={isAddProductOpen}
-        onClose={() => setIsAddProductOpen(false)}
+        onClose={() => {
+          setIsAddProductOpen(false);
+          setEditingProduct(null);
+        }}
         onAddProduct={onAddProduct}
+        initialProduct={editingProduct}
         shop={shop}
         themeId={themeId}
         existingCategories={categories}
       />
+
+      {/* ──── MODALE DE CONFIRMATION DE SUPPRESSION ──── */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-base text-slate-900 dark:text-white">
+                  Supprimer ce produit ?
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Cette action retirera "{productToDelete.name}" de votre boutique.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center gap-3 border border-slate-200 dark:border-slate-800">
+              <img
+                src={productToDelete.image || productToDelete.images?.[0]}
+                alt=""
+                className="w-12 h-12 rounded-xl object-contain bg-white dark:bg-slate-900 p-1"
+              />
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">{productToDelete.name}</p>
+                <p className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">{Number(productToDelete.price).toLocaleString('fr-FR')} FCFA</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setProductToDelete(null)}
+                className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-md shadow-rose-600/30 transition-all cursor-pointer"
+              >
+                Confirmer la suppression
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
