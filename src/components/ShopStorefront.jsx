@@ -30,7 +30,7 @@ import { getDefaultLayoutConfig, AVAILABLE_BLOCKS } from '../config/shopBlocks';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { updateShopLayout } from '../services/productsService';
+import { updateShopLayout, saveNewProduct } from '../services/productsService';
 import BlockConfigModal from './builder/BlockConfigModal';
 import AiBlockModifierModal from './builder/AiBlockModifierModal';
 import AiStorefrontGeneratorModal from './builder/AiStorefrontGeneratorModal';
@@ -237,10 +237,27 @@ function ShopStorefrontInner({
     }
   }, [shop?.id, shop?.code, shop?.name, products]);
 
-  const handleAddProductDirectly = (newProduct) => {
-    setShopProductsList(prev => [newProduct, ...prev]);
-    setSaveToast(`Produit "${newProduct.name}" inséré avec succès !`);
-    setTimeout(() => setSaveToast(''), 4000);
+  const handleAddProductDirectly = async (newProduct) => {
+    try {
+      const enhancedProduct = {
+        ...newProduct,
+        shopId: newProduct.shopId || shop?.id || shop?.code,
+        shop_id: newProduct.shop_id || shop?.id || shop?.code,
+        shopCode: newProduct.shopCode || shop?.code,
+        shopName: newProduct.shopName || shop?.name,
+        vendor_id: newProduct.vendor_id || shop?.seller_id || shop?.owner_uid || shop?.id
+      };
+      await saveNewProduct(enhancedProduct);
+      setShopProductsList(prev => [enhancedProduct, ...prev.filter(p => p.id !== enhancedProduct.id)]);
+      if (onShopUpdated) {
+        onShopUpdated({ ...shop, last_product_added_at: new Date().toISOString() });
+      }
+      setSaveToast(`Produit "${enhancedProduct.name}" inséré avec succès !`);
+      setTimeout(() => setSaveToast(''), 4000);
+    } catch (err) {
+      console.error('Erreur lors de l\'enregistrement du produit:', err);
+      setShopProductsList(prev => [newProduct, ...prev]);
+    }
   };
 
   const handleNavigateToCatalog = (category = 'all') => {
@@ -672,7 +689,7 @@ function ShopStorefrontInner({
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Boutique</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-600 text-white">
-                  {products.length}
+                  {shopProductsList.length}
                 </span>
               </button>
             </div>

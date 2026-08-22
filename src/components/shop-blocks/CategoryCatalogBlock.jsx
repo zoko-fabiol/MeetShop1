@@ -24,10 +24,26 @@ export default function CategoryCatalogBlock({ block, shop, themeId, onSelectPro
   const [selectedCat, setSelectedCat] = useState('all');
 
   // Filtrer les produits de cette boutique
-  const shopProducts = products.filter(p => p.shopId === shop.id || p.shopName === shop.name);
+  const shopProducts = (products || []).filter(p => {
+    if (!p) return false;
+    const pShopId = p.shopId || p.shop_id || p.shop?.id;
+    const pShopCode = p.shopCode || p.shop_code || p.shop?.code;
+    const pShopName = (p.shopName || p.shop_name || p.shop?.name || '').trim().toLowerCase();
+    const sId = shop?.id;
+    const sCode = shop?.code;
+    const sName = (shop?.name || '').trim().toLowerCase();
+    const sSellerId = shop?.seller_id || shop?.owner_uid;
+
+    return Boolean(
+      (sId && pShopId === sId) ||
+      (sCode && pShopCode === sCode) ||
+      (sSellerId && (p.vendor_id === sSellerId || p.seller_id === sSellerId)) ||
+      (sName && pShopName === sName)
+    );
+  });
 
   // Extraire les catégories uniques présentes dans les produits de la boutique
-  const availableCategories = ['all', ...new Set(shopProducts.map(p => p.category).filter(Boolean))];
+  const availableCategories = ['all', ...new Set(shopProducts.map(p => p?.category).filter(Boolean))];
 
   const filteredProducts = shopProducts.filter(p => {
     if (selectedCat !== 'all' && p.category !== selectedCat) return false;

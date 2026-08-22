@@ -26,7 +26,23 @@ export default function FeaturedProductsBlock({ block, shop, themeId, onSelectPr
   const buttonClass = getButtonClasses(buttonStyle, theme, 'primary');
 
   // Filtrer les produits de la boutique
-  const shopProducts = Array.isArray(products) ? products.filter(p => p && (p.shopId === shop.id || p.shopName === shop.name)) : [];
+  const shopProducts = (products || []).filter(p => {
+    if (!p) return false;
+    const pShopId = p.shopId || p.shop_id || p.shop?.id;
+    const pShopCode = p.shopCode || p.shop_code || p.shop?.code;
+    const pShopName = (p.shopName || p.shop_name || p.shop?.name || '').trim().toLowerCase();
+    const sId = shop?.id;
+    const sCode = shop?.code;
+    const sName = (shop?.name || '').trim().toLowerCase();
+    const sSellerId = shop?.seller_id || shop?.owner_uid;
+
+    return Boolean(
+      (sId && pShopId === sId) ||
+      (sCode && pShopCode === sCode) ||
+      (sSellerId && (p.vendor_id === sSellerId || p.seller_id === sSellerId)) ||
+      (sName && pShopName === sName)
+    );
+  });
   
   // En mode édition, si la boutique n'a pas encore de produits, afficher des modèles d'exemples
   const sampleProducts = [

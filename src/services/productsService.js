@@ -490,8 +490,8 @@ export async function fetchProducts() {
         const localProds = localRaw ? JSON.parse(localRaw) : [];
         // Ne garder que les produits locaux qui ne sont pas déjà dans Supabase
         const localOnly = localProds.filter(lp =>
-          lp.id && lp.id.startsWith('prod-local-') &&
-          !supabaseProducts.find(sp => sp.id === lp.id)
+          lp && lp.id &&
+          !supabaseProducts.find(sp => sp.id === lp.id || (sp.name === lp.name && (sp.shopId === lp.shopId || sp.shopId === lp.shop_id)))
         );
         return [...supabaseProducts, ...localOnly];
       }
@@ -555,28 +555,47 @@ export async function fetchShops() {
 }
 
 export async function saveNewProduct(newProduct) {
+  const shopId = newProduct.shopId || newProduct.shop_id;
+  const vendorId = newProduct.vendor_id || newProduct.seller_id;
+
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('products').insert([
-        {
-          name: newProduct.name,
-          price: Number(newProduct.price),
-          category_slug: newProduct.category || 'divers',
-          image_url: newProduct.image,
-          description: newProduct.description,
-          stock: Number(newProduct.stock) || 10,
-          is_available: true
-        }
-      ]);
+      const insertPayload = {
+        name: newProduct.name,
+        price: Number(newProduct.price),
+        category_slug: newProduct.category || 'divers',
+        image_url: newProduct.image || newProduct.images?.[0] || '',
+        image_urls: newProduct.images || (newProduct.image ? [newProduct.image] : []),
+        description: newProduct.description,
+        stock: Number(newProduct.stock) || 10,
+        is_available: true
+      };
+
+      if (shopId) {
+        insertPayload.shop_id = shopId;
+      }
+      if (vendorId) {
+        insertPayload.vendor_id = vendorId;
+      }
+
+      await supabase.from('products').insert([insertPayload]);
     } catch (err) {
       console.warn('Erreur insertion produit Supabase:', err);
     }
   }
 
   const current = JSON.parse(localStorage.getItem('meetshop_products') || '[]');
-  // Assign a local ID so we can de-duplicate when Supabase data arrives later
-  const productWithId = { ...newProduct, id: newProduct.id || `prod-local-${Date.now()}` };
-  const updated = [productWithId, ...current];
+  const productWithId = {
+    ...newProduct,
+    id: newProduct.id || `prod-local-${Date.now()}`,
+    shopId: shopId || newProduct.shopId,
+    shop_id: shopId || newProduct.shop_id,
+    vendor_id: vendorId || newProduct.vendor_id
+  };
+  
+  // Éviter les doublons si le même id existe déjà
+  const filtered = current.filter(p => p.id !== productWithId.id);
+  const updated = [productWithId, ...filtered];
   localStorage.setItem('meetshop_products', JSON.stringify(updated));
   return updated;
 }
