@@ -362,7 +362,7 @@ export default function AiStorefrontGeneratorModal({
                   </button>
 
                   {activeDropdown === 'siteType' && (
-                    <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-2xl z-30 space-y-1 text-xs font-bold text-slate-900 dark:text-white animate-fadeIn">
+                    <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-2xl z-[100] space-y-1 text-xs font-bold text-slate-900 dark:text-white animate-fadeIn max-h-72 overflow-y-auto">
                       {SITE_TYPES.map((t) => (
                         <button
                           key={t}
@@ -391,7 +391,7 @@ export default function AiStorefrontGeneratorModal({
                   </button>
 
                   {activeDropdown === 'activity' && (
-                    <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-30 space-y-1 text-xs font-bold text-slate-900 dark:text-white animate-fadeIn max-h-60 overflow-y-auto">
+                    <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-[100] space-y-1 text-xs font-bold text-slate-900 dark:text-white animate-fadeIn max-h-72 overflow-y-auto">
                       {SECTORS_PRESETS.map((sec) => (
                         <button
                           key={sec}
@@ -442,7 +442,7 @@ export default function AiStorefrontGeneratorModal({
                   </button>
 
                   {activeDropdown === 'positioning' && (
-                    <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-30 space-y-1 text-xs text-slate-900 dark:text-white animate-fadeIn max-h-64 overflow-y-auto">
+                    <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-[100] space-y-1 text-xs text-slate-900 dark:text-white animate-fadeIn max-h-72 overflow-y-auto">
                       {POSITIONING_PRESETS.map((pos) => (
                         <button
                           key={pos.id}
@@ -474,7 +474,7 @@ export default function AiStorefrontGeneratorModal({
                   </button>
 
                   {activeDropdown === 'objective' && (
-                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-30 space-y-1 text-xs text-slate-900 dark:text-white animate-fadeIn">
+                    <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 shadow-2xl z-[100] space-y-1 text-xs text-slate-900 dark:text-white animate-fadeIn max-h-72 overflow-y-auto">
                       {OBJECTIVES_PRESETS.map((obj) => (
                         <button
                           key={obj}

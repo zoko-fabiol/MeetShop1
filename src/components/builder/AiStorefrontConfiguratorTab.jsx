@@ -304,7 +304,7 @@ export default function AiStorefrontConfiguratorTab({
             {/* ═══════════════════════════════════════════════════════
                 PHRASE INTERACTIVE SÉQUENTIELLE ODOO À LIGNES ANIMÉES
                ═══════════════════════════════════════════════════════ */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161922] border border-slate-200/90 dark:border-slate-800 shadow-xl space-y-6 relative overflow-hidden">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161922] border border-slate-200/90 dark:border-slate-800 shadow-xl space-y-6 relative">
               
               {/* Ligne 1 : Type de site */}
               <div className="flex flex-wrap items-center gap-2.5 text-base sm:text-xl font-bold text-slate-800 dark:text-slate-200">
@@ -322,7 +322,7 @@ export default function AiStorefrontConfiguratorTab({
 
                   {/* Popover Choix Type de Site */}
                   {activeDropdown === 'siteType' && (
-                    <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 space-y-1">
+                    <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-[100] space-y-1 max-h-72 overflow-y-auto">
                       {SITE_TYPES.map((st) => (
                         <div
                           key={st.id}
@@ -365,7 +365,7 @@ export default function AiStorefrontConfiguratorTab({
 
                     {/* Popover Choix Secteur */}
                     {activeDropdown === 'activity' && (
-                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 space-y-1">
+                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-[100] space-y-1 max-h-72 overflow-y-auto">
                         {SECTORS_PRESETS.map((sec) => (
                           <div
                             key={sec}
@@ -405,7 +405,7 @@ export default function AiStorefrontConfiguratorTab({
 
                     {/* Popover Choix Positionnement */}
                     {activeDropdown === 'positioning' && (
-                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 space-y-1">
+                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-[100] space-y-1 max-h-72 overflow-y-auto">
                         {POSITIONING_PRESETS.map((pos) => (
                           <div
                             key={pos.id}
@@ -445,7 +445,7 @@ export default function AiStorefrontConfiguratorTab({
 
                     {/* Popover Choix Objectif */}
                     {activeDropdown === 'objective' && (
-                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-50 space-y-1">
+                      <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#1D212C] border border-slate-200 dark:border-slate-700 shadow-2xl p-2 z-[100] space-y-1 max-h-72 overflow-y-auto">
                         {OBJECTIVES_PRESETS.map((obj) => (
                           <div
                             key={obj.id}
