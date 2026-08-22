@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { calculateWholesaleTier } from '../services/wholesaleService';
 
 const CartContext = createContext();
@@ -99,6 +99,7 @@ export function CartProvider({ children }) {
     <CartContext.Provider
       value={{
         cart,
+        items: cart,
         addToCart,
         removeFromCart,
         updateQuantity,
