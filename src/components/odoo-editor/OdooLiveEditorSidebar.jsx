@@ -109,6 +109,7 @@ export const ODOO_INNER_SNIPPETS = [
 export default function OdooLiveEditorSidebar({
   activeTab = 'blocks', // 'blocks' | 'style' | 'theme'
   onChangeTab,
+  activePage = 'home', // 'home' | 'catalog'
   blocks = [],
   selectedBlockId = null,
   selectedSnippetId = null,
@@ -132,7 +133,14 @@ export default function OdooLiveEditorSidebar({
   themeConfig = {},
   onUpdateThemeConfig,
   isMobileDrawerOpen = false,
-  onCloseMobileDrawer
+  onCloseMobileDrawer,
+  onOpenAddProduct,
+  onSyncCatalogWithAi,
+  isAiSyncing = false,
+  catalogCardStyle = 'modern',
+  onChangeCatalogCardStyle,
+  catalogLayoutGrid = 'grid_3',
+  onChangeCatalogLayoutGrid
 }) {
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
   const blockDef = selectedBlock ? AVAILABLE_BLOCKS.find(ab => ab.type === selectedBlock.type) : null;
@@ -264,10 +272,10 @@ export default function OdooLiveEditorSidebar({
           </button>
         </div>
 
-        {/* ──── ONGLETS SUPÉRIEURS ODOO (Blocs | Style | Thème) ──── */}
+        {/* ──── ONGLETS SUPÉRIEURS ODOO (Blocs / Catalogue | Style | Thème) ──── */}
         <div className="flex items-center border-b border-slate-800 bg-[#121418] shrink-0">
           
-          {/* Onglet 1 : + Blocs */}
+          {/* Onglet 1 : Blocs (Accueil) OU Catalogue (Boutique) */}
           <button
             type="button"
             onClick={() => onChangeTab('blocks')}
@@ -277,8 +285,17 @@ export default function OdooLiveEditorSidebar({
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
             }`}
           >
-            <Plus className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Blocs</span>
+            {activePage === 'catalog' ? (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Catalogue</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Blocs</span>
+              </>
+            )}
           </button>
 
           {/* Onglet 2 : ✏️ Style */}
@@ -316,9 +333,139 @@ export default function OdooLiveEditorSidebar({
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
         
         {/* ═══════════════════════════════════════════════════════
-            VUE 1 : + BLOCS & CONTENUS INTÉRIEURS
+            VUE 1 : CATALOGUE (SI PAGE BOUTIQUE) OU BLOCS (SI ACCUEIL)
            ═══════════════════════════════════════════════════════ */}
-        {activeTab === 'blocks' && (
+        {activeTab === 'blocks' && activePage === 'catalog' && (
+          <div className="space-y-5 animate-fadeIn">
+            
+            {/* 1. ACTIONS RAPIDES DU CATALOGUE */}
+            <div className="space-y-2.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                Gestion des Produits
+              </span>
+
+              <button
+                type="button"
+                onClick={onOpenAddProduct}
+                className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Ajouter un Produit</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onSyncCatalogWithAi}
+                disabled={isAiSyncing}
+                className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${isAiSyncing ? 'animate-spin' : ''}`} />
+                <span>{isAiSyncing ? 'Harmonisation IA en cours...' : 'Harmoniser le Design via IA'}</span>
+              </button>
+            </div>
+
+            {/* 2. DESIGN DES CARTES PRODUITS */}
+            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Style des Cartes Produits</span>
+              </span>
+
+              <div className="grid grid-cols-1 gap-1.5">
+                {[
+                  { id: 'modern', label: '🌟 Moderne & Arrondi', desc: 'Design épuré avec bouton panier flottant' },
+                  { id: 'neo_brutalist', label: '⚡ Néo-Brutaliste', desc: 'Bordures nettes, ombres dures et fort contraste' },
+                  { id: 'glassmorphism', label: '💎 Glassmorphism', desc: 'Effet verre dépoli moderne et translucide' },
+                  { id: 'luxury_minimal', label: '👑 Luxe Épuré', desc: 'Typographie fine, minimalisme haute couture' },
+                  { id: 'compact_merchant', label: '📦 Compact Marchand', desc: 'Densité optimale pour gros catalogues' }
+                ].map(st => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => onChangeCatalogCardStyle?.(st.id)}
+                    className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${
+                      catalogCardStyle === st.id
+                        ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold ring-1 ring-emerald-500 shadow-sm'
+                        : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
+                    }`}
+                  >
+                    <div className="text-xs font-bold flex items-center justify-between">
+                      <span>{st.label}</span>
+                      {catalogCardStyle === st.id && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{st.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. DISPOSITION DE LA GRILLE */}
+            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Affichage de la Grille</span>
+              </span>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'grid_3', label: '3 Colonnes', icon: Grid3X3 },
+                  { id: 'grid_2', label: '2 Colonnes', icon: LayoutGrid },
+                  { id: 'grid_4', label: '4 Colonnes', icon: LayoutGrid },
+                  { id: 'list', label: 'Mode Liste', icon: AlignLeft }
+                ].map(gr => (
+                  <button
+                    key={gr.id}
+                    type="button"
+                    onClick={() => onChangeCatalogLayoutGrid?.(gr.id)}
+                    className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border cursor-pointer ${
+                      catalogLayoutGrid === gr.id
+                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <gr.icon className="w-3.5 h-3.5" />
+                    <span>{gr.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. TEMPLATES BOUTIQUE ODOO */}
+            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Store className="w-3.5 h-3.5 text-amber-400" />
+                <span>Thème de Boutique Odoo</span>
+              </span>
+
+              <div className="grid grid-cols-1 gap-1.5">
+                {ODOO_SHOP_TEMPLATES.map(tmpl => (
+                  <button
+                    key={tmpl.id}
+                    type="button"
+                    onClick={() => onChangeShopTemplate?.(tmpl.id)}
+                    className={`p-2 rounded-xl text-left transition-all border cursor-pointer flex items-center justify-between ${
+                      shopTemplate === tmpl.id
+                        ? 'bg-amber-500/15 border-amber-500 text-white font-bold'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-slate-200">{tmpl.name}</span>
+                      <p className="text-[10px] text-slate-500">{tmpl.description}</p>
+                    </div>
+                    {shopTemplate === tmpl.id && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            VUE 1 : BLOCS & SNIPPETS (SI PAGE ACCUEIL)
+           ═══════════════════════════════════════════════════════ */}
+        {activeTab === 'blocks' && activePage !== 'catalog' && (
           <div className="space-y-6 animate-fadeIn">
             
             {/* 1. GRANDS BLOCS STRUCTURELS */}

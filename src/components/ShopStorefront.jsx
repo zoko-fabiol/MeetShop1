@@ -39,6 +39,8 @@ import ShopCatalogPage from './shop/ShopCatalogPage';
 import OdooTopEditBar from './odoo-editor/OdooTopEditBar';
 import OdooLiveEditorSidebar from './odoo-editor/OdooLiveEditorSidebar';
 import OdooLiveCanvasWrapper from './odoo-editor/OdooLiveCanvasWrapper';
+import OdooQuickProductModal from './odoo-editor/OdooQuickProductModal';
+import { syncCatalogDesignWithShopTheme } from '../services/mistralAiService';
 import { recordShopView } from '../services/analyticsService';
 
 class StorefrontErrorBoundary extends React.Component {
@@ -525,6 +527,46 @@ function ShopStorefrontInner({
     setIsEditMode(false);
   };
 
+  // ──── Basculement intelligent entre pages (Accueil / Boutique) avec sauvegarde automatique ────
+  const handleChangeActivePage = async (newPage) => {
+    if (newPage === activeTab) return;
+    if (hasUnsavedChanges) {
+      await handleSaveLive();
+    }
+    setActiveTab(newPage);
+    setSaveToast(`Page active : ${newPage === 'home' ? 'Accueil (Vitrine)' : 'Boutique (Catalogue)'}`);
+    setTimeout(() => setSaveToast(''), 3000);
+  };
+
+  // ──── Synchronisation intelligente du catalogue avec l'IA ────
+  const [isAiSyncingCatalog, setIsAiSyncingCatalog] = useState(false);
+  const handleSyncCatalogWithAi = async () => {
+    setIsAiSyncingCatalog(true);
+    try {
+      const syncedStyles = await syncCatalogDesignWithShopTheme({ shop, currentLayout });
+      const newConfig = {
+        ...currentLayout,
+        catalog_config: {
+          ...(currentLayout.catalog_config || {}),
+          cardStyle: syncedStyles.cardStyle || 'modern',
+          layoutGrid: syncedStyles.layoutGrid || 'grid_3',
+          synced_at: new Date().toISOString()
+        }
+      };
+      pushHistory(newConfig);
+      updateShopLayout(shop?.id || shop?.code, newConfig);
+      if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+      setSaveToast('✨ Design du catalogue harmonisé avec l\'IA !');
+      setTimeout(() => setSaveToast(''), 3500);
+    } catch (e) {
+      console.warn('AI sync catalog error:', e);
+    } finally {
+      setIsAiSyncingCatalog(false);
+    }
+  };
+
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+
   const handleWhatsApp = (phone, name) => {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     const targetPhone = cleanPhone.length === 9 ? `237${cleanPhone}` : cleanPhone;
@@ -546,8 +588,22 @@ function ShopStorefrontInner({
     }
   };
 
+  // Synchronisation du titre de la page pour le SEO
+  useEffect(() => {
+    if (shop?.name) {
+      document.title = `${shop.name} | Boutique Officielle — MeetShop Cameroun`;
+    }
+  }, [shop?.name]);
+
+  // Track shop view analytics
+  useEffect(() => {
+    if (shop?.id || shop?.code) {
+      recordShopView(shop.id || shop.code, shop.name);
+    }
+  }, [shop?.id, shop?.code, shop?.name]);
+
   const handleApplyGeneratedLayout = (generatedLayout) => {
-    pushHistory(generatedLayout);
+    setCurrentLayout(generatedLayout);
     if (generatedLayout.theme) {
       setActiveThemeId(generatedLayout.theme);
     }
@@ -596,7 +652,7 @@ function ShopStorefrontInner({
           deviceMode={deviceMode}
           onChangeDeviceMode={setDeviceMode}
           activePage={activeTab}
-          onChangePage={setActiveTab}
+          onChangePage={handleChangeActivePage}
           onOpenAiCopilot={() => setActiveTab('ai_generator')}
           onDiscard={handleDiscardLive}
           onSave={handleSaveLive}
@@ -832,6 +888,7 @@ function ShopStorefrontInner({
               setEditorTab(t);
               setIsMobileDrawerOpen(true);
             }}
+            activePage={activeTab}
             isMobileDrawerOpen={isMobileDrawerOpen}
             onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
             blocks={blocks}
@@ -865,6 +922,37 @@ function ShopStorefrontInner({
             onUpdateThemeConfig={(cfg) => {
               const nextLayout = { ...currentLayout, theme_config: { ...(currentLayout.theme_config || {}), ...cfg } };
               pushHistory(nextLayout);
+            }}
+            onOpenAddProduct={() => setIsAddProductModalOpen(true)}
+            onSyncCatalogWithAi={handleSyncCatalogWithAi}
+            isAiSyncing={isAiSyncingCatalog}
+            catalogCardStyle={currentLayout.catalog_config?.cardStyle || 'modern'}
+            onChangeCatalogCardStyle={(st) => {
+              const newConfig = {
+                ...currentLayout,
+                catalog_config: {
+                  ...(currentLayout.catalog_config || {}),
+                  cardStyle: st,
+                  updated_at: new Date().toISOString()
+                }
+              };
+              pushHistory(newConfig);
+              updateShopLayout(shop?.id || shop?.code, newConfig);
+              if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+            }}
+            catalogLayoutGrid={currentLayout.catalog_config?.layoutGrid || 'grid_3'}
+            onChangeCatalogLayoutGrid={(gr) => {
+              const newConfig = {
+                ...currentLayout,
+                catalog_config: {
+                  ...(currentLayout.catalog_config || {}),
+                  layoutGrid: gr,
+                  updated_at: new Date().toISOString()
+                }
+              };
+              pushHistory(newConfig);
+              updateShopLayout(shop?.id || shop?.code, newConfig);
+              if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
             }}
           />
 
@@ -1035,6 +1123,21 @@ function ShopStorefrontInner({
           setTimeout(() => setSaveToast(''), 4000);
         }}
       />
+
+      {/* Modal Ajout Rapide de Produit depuis le Panneau Odoo */}
+      {isAddProductModalOpen && (
+        <OdooQuickProductModal
+          isOpen={isAddProductModalOpen}
+          onClose={() => setIsAddProductModalOpen(false)}
+          shop={shop}
+          onSaveProduct={async (newProd) => {
+            await handleAddProductDirectly(newProd);
+            setIsAddProductModalOpen(false);
+            setSaveToast('Nouveau produit inséré avec succès !');
+            setTimeout(() => setSaveToast(''), 3000);
+          }}
+        />
+      )}
 
     </div>
   );
