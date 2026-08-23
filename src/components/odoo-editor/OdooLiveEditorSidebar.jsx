@@ -23,6 +23,8 @@ import {
   Upload, 
   Eye, 
   LayoutGrid, 
+  Grid3x3,
+  Grid2x2,
   Sliders, 
   ChevronRight, 
   ChevronDown, 
@@ -408,8 +410,8 @@ export default function OdooLiveEditorSidebar({
 
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'grid_3', label: '3 Colonnes', icon: Grid3X3 },
-                  { id: 'grid_2', label: '2 Colonnes', icon: LayoutGrid },
+                  { id: 'grid_3', label: '3 Colonnes', icon: Grid3x3 },
+                  { id: 'grid_2', label: '2 Colonnes', icon: Grid2x2 },
                   { id: 'grid_4', label: '4 Colonnes', icon: LayoutGrid },
                   { id: 'list', label: 'Mode Liste', icon: AlignLeft }
                 ].map(gr => (
