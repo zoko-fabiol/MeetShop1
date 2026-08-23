@@ -67,6 +67,11 @@ class StorefrontErrorBoundary extends React.Component {
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             Un élément visuel a nécessité un rechargement propre. Cliquez ci-dessous pour actualiser la vitrine sans perte de données.
           </p>
+          {this.state.error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-500 text-xs font-mono max-w-lg text-left overflow-auto">
+              {this.state.error.toString()}
+            </div>
+          )}
           <div className="flex items-center gap-3 justify-center pt-2">
             <button
               type="button"

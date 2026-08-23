@@ -42,6 +42,7 @@ import {
   Calendar, 
   Heart, 
   ShoppingBag, 
+  Store,
   Facebook, 
   Instagram,
   Shirt,
