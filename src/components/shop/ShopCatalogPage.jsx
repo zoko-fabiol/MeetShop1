@@ -56,6 +56,7 @@ export default function ShopCatalogPage({
   designVariant = null,
   isEditMode = false,
   isOwner = false,
+  isMobilePreview = false,
   onSelectProduct,
   onOpenWhatsApp,
   onAddProduct,
@@ -363,30 +364,32 @@ export default function ShopCatalogPage({
         {/* ═══════════════════════════════════════════════════════
             CORPS DU CATALOGUE (FILTRES + GRILLE PRODUITS)
            ═══════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className={`grid grid-cols-1 ${isMobilePreview ? 'gap-3' : 'lg:grid-cols-12 gap-6'} items-start`}>
           
-          {/* SIDEBAR DE FILTRES (Desktop) */}
-          <aside className="hidden lg:block lg:col-span-3 sticky top-4">
-            <CatalogFilterSidebar
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              priceRange={priceRange}
-              onPriceRangeChange={handlePriceRangeChange}
-              maxPriceLimit={maxPriceLimit}
-              onlyInStock={onlyInStock}
-              onToggleInStock={setOnlyInStock}
-              onlyOnSale={onlyOnSale}
-              onToggleOnSale={setOnlyOnSale}
-              productsCountByCategory={productsCountByCategory}
-              totalProductsCount={shopProducts.length}
-              onResetFilters={handleResetFilters}
-              themeId={themeId}
-            />
-          </aside>
+          {/* SIDEBAR DE FILTRES (Desktop uniquement hors mobile preview) */}
+          {!isMobilePreview && (
+            <aside className="hidden lg:block lg:col-span-3 sticky top-4">
+              <CatalogFilterSidebar
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+                priceRange={priceRange}
+                onPriceRangeChange={handlePriceRangeChange}
+                maxPriceLimit={maxPriceLimit}
+                onlyInStock={onlyInStock}
+                onToggleInStock={setOnlyInStock}
+                onlyOnSale={onlyOnSale}
+                onToggleOnSale={setOnlyOnSale}
+                productsCountByCategory={productsCountByCategory}
+                totalProductsCount={shopProducts.length}
+                onResetFilters={handleResetFilters}
+                themeId={themeId}
+              />
+            </aside>
+          )}
 
           {/* MAIN CONTENT AREA */}
-          <section className="lg:col-span-9 space-y-4">
+          <section className={`${isMobilePreview ? 'w-full space-y-3' : 'lg:col-span-9 space-y-4'}`}>
             
             {/* Barre de Recherche, Tri & Switcher de Vue Odoo */}
             <div className={`p-3 sm:p-4 rounded-3xl shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 ${dv.cardInnerClass || 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'}`}>
@@ -506,12 +509,14 @@ export default function ShopCatalogPage({
                 </button>
               </div>
             ) : (
-              <div className={`grid gap-3 sm:gap-4 ${
+              <div className={`grid gap-2.5 sm:gap-4 ${
                 layoutMode === 'list'
                   ? 'grid-cols-1'
-                  : layoutMode === 'grid_4'
-                    ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
-                    : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
+                  : isMobilePreview
+                    ? 'grid-cols-2'
+                    : layoutMode === 'grid_4'
+                      ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
+                      : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
               }`}>
                 
                 {/* Carte Rapide Ajouter un Produit (Style Odoo) */}

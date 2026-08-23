@@ -846,33 +846,133 @@ function ShopStorefrontInner({
             deviceMode === 'mobile' ? 'overflow-y-auto overflow-x-hidden flex justify-center py-4 px-2 pb-24' : 'overflow-y-auto overscroll-contain py-6 px-2 sm:px-6 pb-24'
           }`}>
             {activeTab === 'catalog' ? (
-              <div className="w-full max-w-6xl mx-auto pb-48 animate-fadeIn">
-                <ShopCatalogPage
-                  shop={shop}
-                  products={shopProductsList}
-                  themeId={activeThemeId}
-                  designVariant={currentLayout.designVariant || shop?.layout_config?.designVariant || 'modern_minimal'}
-                  isEditMode={true}
-                  isOwner={isOwner}
-                  onAddProduct={handleAddProductDirectly}
-                  onDeleteProduct={handleDeleteProductDirectly}
-                  onSelectProduct={onSelectProduct}
-                  onOpenWhatsApp={handleWhatsApp}
-                  initialCategory={catalogCategory}
-                  onUpdateCatalogConfig={(catalogConfig) => {
-                    const newConfig = { ...currentLayout, catalog_config: catalogConfig };
-                    setCurrentLayout(newConfig);
-                    updateShopLayout(shop?.id || shop?.code, newConfig);
-                    if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
-                  }}
-                  onUpdateTemplate={(tmplId) => {
-                    const newConfig = { ...currentLayout, shop_template: tmplId };
-                    setCurrentLayout(newConfig);
-                    updateShopLayout(shop?.id || shop?.code, newConfig);
-                    if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
-                  }}
-                />
-              </div>
+              deviceMode === 'mobile' ? (
+                <div className="w-full flex items-center justify-center py-2 select-none">
+                  {/* Sur mobile natif : canvas pleine largeur sans châssis encombrant */}
+                  <div className="w-full md:hidden bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-slate-200/90 dark:border-slate-800 p-2 sm:p-3 transition-all">
+                    <ShopCatalogPage
+                      shop={shop}
+                      products={shopProductsList}
+                      themeId={activeThemeId}
+                      designVariant={currentLayout.designVariant || shop?.layout_config?.designVariant || 'modern_minimal'}
+                      isEditMode={true}
+                      isOwner={isOwner}
+                      isMobilePreview={true}
+                      onAddProduct={handleAddProductDirectly}
+                      onDeleteProduct={handleDeleteProductDirectly}
+                      onSelectProduct={onSelectProduct}
+                      onOpenWhatsApp={handleWhatsApp}
+                      initialCategory={catalogCategory}
+                      onUpdateCatalogConfig={(catalogConfig) => {
+                        const newConfig = { ...currentLayout, catalog_config: catalogConfig };
+                        setCurrentLayout(newConfig);
+                        updateShopLayout(shop?.id || shop?.code, newConfig);
+                        if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                      }}
+                      onUpdateTemplate={(tmplId) => {
+                        const newConfig = { ...currentLayout, shop_template: tmplId };
+                        setCurrentLayout(newConfig);
+                        updateShopLayout(shop?.id || shop?.code, newConfig);
+                        if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                      }}
+                    />
+                  </div>
+
+                  {/* 📱 MOCKUP SMARTPHONE (Sur écran Desktop) */}
+                  <div className="hidden md:flex relative w-[385px] max-w-full h-[760px] max-h-[calc(100vh-140px)] rounded-[52px] bg-slate-950 p-[10px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7)] border-4 border-slate-700/80 ring-1 ring-white/10 transition-all duration-300 flex-col shrink-0">
+                    
+                    {/* Boutons latéraux physiques (Power & Volume) */}
+                    <div className="absolute -left-[7px] top-24 w-[3px] h-10 bg-slate-700 rounded-l-sm" />
+                    <div className="absolute -left-[7px] top-38 w-[3px] h-10 bg-slate-700 rounded-l-sm" />
+                    <div className="absolute -right-[7px] top-28 w-[3px] h-14 bg-slate-700 rounded-r-sm" />
+
+                    {/* Écran Smartphone */}
+                    <div className="relative w-full h-full rounded-[42px] bg-white dark:bg-slate-900 overflow-hidden flex flex-col flex-1">
+                      
+                      {/* Barre de Statut Supérieure avec Dynamic Island */}
+                      <div className="h-10 bg-white dark:bg-slate-900 w-full flex items-center justify-between px-6 pt-1 select-none shrink-0 z-30 border-b border-slate-100 dark:border-slate-800/40">
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 font-mono">09:41</span>
+                        
+                        {/* Dynamic Island Pill */}
+                        <div className="w-24 h-4 bg-black rounded-full flex items-center justify-end px-2 gap-1.5 shadow-inner">
+                          <div className="w-2 h-2 rounded-full bg-slate-800 ring-1 ring-slate-700" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[10px] text-slate-800 dark:text-slate-200 font-bold">
+                          <span>5G</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Contenu Défilable Intérieur de l'Écran */}
+                      <div className="flex-1 h-full overflow-y-auto overflow-x-hidden p-2 sm:p-2.5 max-w-full overscroll-contain">
+                        <ShopCatalogPage
+                          shop={shop}
+                          products={shopProductsList}
+                          themeId={activeThemeId}
+                          designVariant={currentLayout.designVariant || shop?.layout_config?.designVariant || 'modern_minimal'}
+                          isEditMode={true}
+                          isOwner={isOwner}
+                          isMobilePreview={true}
+                          onAddProduct={handleAddProductDirectly}
+                          onDeleteProduct={handleDeleteProductDirectly}
+                          onSelectProduct={onSelectProduct}
+                          onOpenWhatsApp={handleWhatsApp}
+                          initialCategory={catalogCategory}
+                          onUpdateCatalogConfig={(catalogConfig) => {
+                            const newConfig = { ...currentLayout, catalog_config: catalogConfig };
+                            setCurrentLayout(newConfig);
+                            updateShopLayout(shop?.id || shop?.code, newConfig);
+                            if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                          }}
+                          onUpdateTemplate={(tmplId) => {
+                            const newConfig = { ...currentLayout, shop_template: tmplId };
+                            setCurrentLayout(newConfig);
+                            updateShopLayout(shop?.id || shop?.code, newConfig);
+                            if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                          }}
+                        />
+                      </div>
+
+                      {/* Barre d'accueil Home Indicator Inférieure */}
+                      <div className="h-6 bg-white dark:bg-slate-900 w-full flex items-center justify-center shrink-0 z-30 border-t border-slate-100 dark:border-slate-800/40">
+                        <div className="w-32 h-1 bg-slate-400 dark:bg-slate-600 rounded-full" />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-6xl mx-auto pb-48 animate-fadeIn">
+                  <ShopCatalogPage
+                    shop={shop}
+                    products={shopProductsList}
+                    themeId={activeThemeId}
+                    designVariant={currentLayout.designVariant || shop?.layout_config?.designVariant || 'modern_minimal'}
+                    isEditMode={true}
+                    isOwner={isOwner}
+                    isMobilePreview={false}
+                    onAddProduct={handleAddProductDirectly}
+                    onDeleteProduct={handleDeleteProductDirectly}
+                    onSelectProduct={onSelectProduct}
+                    onOpenWhatsApp={handleWhatsApp}
+                    initialCategory={catalogCategory}
+                    onUpdateCatalogConfig={(catalogConfig) => {
+                      const newConfig = { ...currentLayout, catalog_config: catalogConfig };
+                      setCurrentLayout(newConfig);
+                      updateShopLayout(shop?.id || shop?.code, newConfig);
+                      if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                    }}
+                    onUpdateTemplate={(tmplId) => {
+                      const newConfig = { ...currentLayout, shop_template: tmplId };
+                      setCurrentLayout(newConfig);
+                      updateShopLayout(shop?.id || shop?.code, newConfig);
+                      if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+                    }}
+                  />
+                </div>
+              )
             ) : (
               <div className={`transition-all duration-300 w-full ${
                 deviceMode === 'mobile' ? 'max-w-[440px] flex justify-center' : 'max-w-5xl mx-auto pb-32'
