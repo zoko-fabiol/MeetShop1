@@ -130,7 +130,9 @@ export default function OdooLiveEditorSidebar({
   onChangeShopTemplate,
   shop,
   themeConfig = {},
-  onUpdateThemeConfig
+  onUpdateThemeConfig,
+  isMobileDrawerOpen = false,
+  onCloseMobileDrawer
 }) {
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
   const blockDef = selectedBlock ? AVAILABLE_BLOCKS.find(ab => ab.type === selectedBlock.type) : null;
@@ -227,58 +229,91 @@ export default function OdooLiveEditorSidebar({
   };
 
   return (
-    <aside className="w-80 sm:w-[360px] xl:w-[380px] bg-[#16181D] text-slate-200 border-l border-slate-800 h-full flex flex-col shadow-2xl z-40 select-none transition-all shrink-0">
-      
-      {/* ──── ONGLETS SUPÉRIEURS ODOO (Blocs | Style | Thème) ──── */}
-      <div className="flex items-center border-b border-slate-800 bg-[#121418] shrink-0">
+    <>
+      {/* ──── OVERLAY BACKDROP POUR MOBILE (Quand le tiroir est ouvert) ──── */}
+      {isMobileDrawerOpen && (
+        <div 
+          onClick={onCloseMobileDrawer}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fadeIn"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ──── PANNEAU LATÉRAL (DESKTOP) / TIROIR COULISSANT TACTILE (MOBILE) ──── */}
+      <aside className={`
+        fixed inset-x-0 bottom-0 z-50 max-h-[85vh] h-[85vh] rounded-t-3xl border-t border-slate-700 shadow-2xl bg-[#16181D] text-slate-200 flex flex-col select-none transition-transform duration-300 ease-out
+        lg:static lg:w-80 xl:w-[380px] lg:h-full lg:max-h-none lg:rounded-none lg:border-t-0 lg:border-l lg:border-slate-800 lg:z-40 lg:translate-y-0
+        ${isMobileDrawerOpen ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
+      `}>
         
-        {/* Onglet 1 : + Blocs */}
-        <button
-          type="button"
-          onClick={() => onChangeTab('blocks')}
-          className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
-            activeTab === 'blocks'
-              ? 'border-emerald-500 text-emerald-400 bg-slate-800/60'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
-          }`}
-        >
-          <Plus className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Blocs</span>
-        </button>
+        {/* ──── EN-TÊTE TIROIR MOBILE AVEC POIGNÉE ET BOUTON FERMER ──── */}
+        <div className="lg:hidden flex items-center justify-between px-4 pt-3 pb-2 border-b border-slate-800 bg-[#121418] shrink-0 rounded-t-3xl">
+          <div className="flex items-center gap-1.5 text-xs font-black text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Panneau de Personnalisation</span>
+          </div>
 
-        {/* Onglet 2 : ✏️ Style */}
-        <button
-          type="button"
-          onClick={() => onChangeTab('style')}
-          className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
-            activeTab === 'style'
-              ? 'border-emerald-500 text-emerald-400 bg-slate-800/60'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
-          }`}
-        >
-          <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Style</span>
-          {(selectedBlock || activeSnippet) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-        </button>
+          <button
+            type="button"
+            onClick={onCloseMobileDrawer}
+            className="px-3 py-1 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-black flex items-center gap-1.5 border border-emerald-500/30 cursor-pointer"
+            title="Voir le rendu sur le site"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Voir le site</span>
+          </button>
+        </div>
 
-        {/* Onglet 3 : 🎨 Thème */}
-        <button
-          type="button"
-          onClick={() => onChangeTab('theme')}
-          className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
-            activeTab === 'theme'
-              ? 'border-emerald-500 text-emerald-400 bg-slate-800/60 font-black'
-              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
-          }`}
-        >
-          <Palette className="w-3.5 h-3.5 text-amber-400" />
-          <span>Thème</span>
-        </button>
+        {/* ──── ONGLETS SUPÉRIEURS ODOO (Blocs | Style | Thème) ──── */}
+        <div className="flex items-center border-b border-slate-800 bg-[#121418] shrink-0">
+          
+          {/* Onglet 1 : + Blocs */}
+          <button
+            type="button"
+            onClick={() => onChangeTab('blocks')}
+            className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
+              activeTab === 'blocks'
+                ? 'border-emerald-500 text-emerald-400 bg-slate-800/60'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Blocs</span>
+          </button>
 
-      </div>
+          {/* Onglet 2 : ✏️ Style */}
+          <button
+            type="button"
+            onClick={() => onChangeTab('style')}
+            className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
+              activeTab === 'style'
+                ? 'border-emerald-500 text-emerald-400 bg-slate-800/60'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Style</span>
+            {(selectedBlock || activeSnippet) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+          </button>
 
-      {/* ──── CONTENU DE L'ONGLET SÉLECTIONNÉ ──── */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Onglet 3 : 🎨 Thème */}
+          <button
+            type="button"
+            onClick={() => onChangeTab('theme')}
+            className={`flex-1 py-3 text-xs font-black flex items-center justify-center gap-1.5 transition-all border-b-2 cursor-pointer ${
+              activeTab === 'theme'
+                ? 'border-emerald-500 text-emerald-400 bg-slate-800/60 font-black'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5 text-amber-400" />
+            <span>Thème</span>
+          </button>
+
+        </div>
+
+        {/* ──── CONTENU DE L'ONGLET SÉLECTIONNÉ ──── */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
         
         {/* ═══════════════════════════════════════════════════════
             VUE 1 : + BLOCS & CONTENUS INTÉRIEURS
@@ -1676,5 +1711,6 @@ export default function OdooLiveEditorSidebar({
       </div>
 
     </aside>
+    </>
   );
 }

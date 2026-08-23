@@ -12,7 +12,9 @@ import {
   Save,
   RotateCcw,
   Home,
-  ShoppingBag
+  ShoppingBag,
+  Menu,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function OdooTopEditBar({
@@ -29,23 +31,38 @@ export default function OdooTopEditBar({
   onSave,
   isSaving = false,
   hasUnsavedChanges = false,
-  shopName = 'Ma Boutique'
+  shopName = 'Ma Boutique',
+  onToggleMobileDrawer,
+  isMobileDrawerOpen = false
 }) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-[#1B1D23] text-white border-b border-slate-800 flex items-center justify-between px-3 sm:px-6 shadow-xl select-none">
+    <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-[#1B1D23] text-white border-b border-slate-800 flex items-center justify-between px-2 sm:px-6 shadow-xl select-none">
       
-      {/* Gauche : Logo Odoo Edit & Nom de la boutique */}
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="flex items-center gap-2">
+      {/* ──── GAUCHE : Bouton Quitter / Logo & Navigation ──── */}
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+        
+        {/* Bouton Quitter / Ignorer rapide sur Mobile */}
+        <button
+          type="button"
+          onClick={onDiscard}
+          className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 sm:hidden cursor-pointer"
+          title="Quitter l'éditeur"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* Indicateur Mode Édition */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-mono text-xs font-black tracking-wider text-emerald-400 uppercase hidden sm:inline">
-            Éditeur Live Odoo
+          <span className="font-mono text-xs font-black tracking-wider text-emerald-400 uppercase hidden md:inline">
+            Éditeur Live
           </span>
         </div>
 
-        <span className="text-slate-600 hidden sm:inline">|</span>
+        <span className="text-slate-700 hidden md:inline">|</span>
 
-        <span className="font-bold text-xs text-slate-200 truncate max-w-[120px] sm:max-w-[180px]">
+        {/* Nom Boutique (tronqué proprement) */}
+        <span className="font-bold text-xs text-slate-200 truncate max-w-[90px] sm:max-w-[150px] md:max-w-[180px]">
           {shopName}
         </span>
 
@@ -60,7 +77,7 @@ export default function OdooTopEditBar({
             title="Éditer la page d'accueil"
           >
             <Home className="w-3 h-3" />
-            <span className="hidden md:inline">Accueil</span>
+            <span className="hidden sm:inline">Accueil</span>
           </button>
           <button
             type="button"
@@ -71,22 +88,22 @@ export default function OdooTopEditBar({
             title="Éditer la page boutique / catalogue"
           >
             <ShoppingBag className="w-3 h-3" />
-            <span className="hidden md:inline">Boutique</span>
+            <span className="hidden sm:inline">Boutique</span>
           </button>
         </div>
 
         {hasUnsavedChanges && (
-          <span className="hidden lg:inline-flex px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
+          <span className="hidden xl:inline-flex px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
             Non enregistré
           </span>
         )}
       </div>
 
-      {/* Centre : Outils Undo/Redo & Switcher Écran PC/Mobile */}
-      <div className="flex items-center gap-1.5 sm:gap-3">
+      {/* ──── CENTRE : Outils Undo/Redo & Switcher Écran PC/Mobile ──── */}
+      <div className="flex items-center gap-1 sm:gap-2.5">
         
         {/* Undo & Redo */}
-        <div className="flex items-center gap-0.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        <div className="flex items-center gap-0.5 bg-slate-900/90 p-0.5 sm:p-1 rounded-xl border border-slate-800">
           <button
             type="button"
             onClick={onUndo}
@@ -111,8 +128,8 @@ export default function OdooTopEditBar({
           </button>
         </div>
 
-        {/* Device Switcher */}
-        <div className="flex items-center gap-0.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        {/* Device Switcher (visible uniquement sur grand écran car sur mobile l'écran est déjà mobile) */}
+        <div className="hidden sm:flex items-center gap-0.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
           <button
             type="button"
             onClick={() => onChangeDeviceMode('desktop')}
@@ -135,11 +152,11 @@ export default function OdooTopEditBar({
           </button>
         </div>
 
-        {/* Bouton Copilote IA Odoo */}
+        {/* Bouton Copilote IA */}
         <button
           type="button"
           onClick={onOpenAiCopilot}
-          className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+          className="px-2 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
           title="Copilote IA Mistral"
         >
           <Bot className="w-3.5 h-3.5" />
@@ -148,18 +165,18 @@ export default function OdooTopEditBar({
 
       </div>
 
-      {/* Droite : Boutons Ignorer & Sauvegarder Odoo */}
-      <div className="flex items-center gap-2">
+      {/* ──── DROITE : Boutons Ignorer & Sauvegarder ──── */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
         
-        {/* Bouton Ignorer (Discard) */}
+        {/* Bouton Ignorer (Desktop) */}
         <button
           type="button"
           onClick={onDiscard}
-          className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+          className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
           title="Quitter sans enregistrer les modifications"
         >
           <X className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Ignorer</span>
+          <span>Ignorer</span>
         </button>
 
         {/* Bouton Sauvegarder Vert Odoo Proéminent */}
@@ -167,7 +184,9 @@ export default function OdooTopEditBar({
           type="button"
           onClick={onSave}
           disabled={isSaving}
-          className="px-4 sm:px-5 py-1.5 rounded-xl bg-[#00D084] hover:bg-[#00B875] text-[#111827] font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+          className={`px-3 sm:px-5 py-1.5 rounded-xl bg-[#00D084] hover:bg-[#00B875] text-[#111827] font-black text-xs tracking-wider uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer ${
+            hasUnsavedChanges ? 'ring-2 ring-emerald-300 animate-pulse' : ''
+          }`}
           title="Sauvegarder et publier les modifications"
         >
           {isSaving ? (
@@ -183,3 +202,4 @@ export default function OdooTopEditBar({
     </header>
   );
 }
+

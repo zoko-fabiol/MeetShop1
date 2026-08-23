@@ -152,6 +152,7 @@ function ShopStorefrontInner({
   // ═══════════════════════════════════════════════════════
   const [isEditMode, setIsEditMode] = useState(initialEditMode);
   const [editorTab, setEditorTab] = useState('blocks'); // 'blocks' | 'style' | 'theme'
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [selectedSnippetId, setSelectedSnippetId] = useState(null);
   const [deviceMode, setDeviceMode] = useState('desktop'); // 'desktop' | 'mobile'
@@ -602,6 +603,8 @@ function ShopStorefrontInner({
           isSaving={isSaving}
           hasUnsavedChanges={hasUnsavedChanges}
           shopName={shop?.name}
+          isMobileDrawerOpen={isMobileDrawerOpen}
+          onToggleMobileDrawer={() => setIsMobileDrawerOpen(prev => !prev)}
         />
       )}
 
@@ -742,12 +745,12 @@ function ShopStorefrontInner({
           CORPS PRINCIPAL : MODE ÉDITION VS MODE PUBLIC
          ═══════════════════════════════════════════════════════ */}
       {isEditMode ? (
-        /* Mode Édition Odoo Live : Barre d'édition (top-0 h-12) + Canvas plein écran scrollable + Sidebar Droite */
+        /* Mode Édition Odoo Live : Barre d'édition (top-0 h-12) + Canvas plein écran scrollable + Sidebar Droite / Bottom Sheet Mobile */
         <div className="fixed inset-0 top-12 z-40 flex overflow-hidden bg-slate-100 dark:bg-slate-950">
           
-          {/* Zone Canvas Page */}
+          {/* Zone Canvas Page (100% de la largeur sur mobile, avec padding pour la barre d'action basse) */}
           <main tabIndex={0} className={`flex-1 h-full bg-slate-200/70 dark:bg-slate-950 focus:outline-none ${
-            deviceMode === 'mobile' ? 'overflow-hidden flex items-center justify-center p-2' : 'overflow-y-auto overscroll-contain py-6 px-2 sm:px-6'
+            deviceMode === 'mobile' ? 'overflow-y-auto overflow-x-hidden flex justify-center py-4 px-2 pb-24' : 'overflow-y-auto overscroll-contain py-6 px-2 sm:px-6 pb-24'
           }`}>
             {activeTab === 'catalog' ? (
               <div className="w-full max-w-6xl mx-auto pb-48 animate-fadeIn">
@@ -778,8 +781,8 @@ function ShopStorefrontInner({
                 />
               </div>
             ) : (
-              <div className={`transition-all duration-300 ${
-                deviceMode === 'mobile' ? 'w-full max-w-[440px] flex justify-center' : 'w-full max-w-5xl mx-auto pb-48'
+              <div className={`transition-all duration-300 w-full ${
+                deviceMode === 'mobile' ? 'max-w-[440px] flex justify-center' : 'max-w-5xl mx-auto pb-32'
               }`}>
                 <OdooLiveCanvasWrapper
                   blocks={blocks}
@@ -788,8 +791,21 @@ function ShopStorefrontInner({
                   themeId={activeThemeId}
                   selectedBlockId={selectedBlockId}
                   selectedSnippetId={selectedSnippetId}
-                  onSelectBlock={handleSelectBlock}
-                  onSelectSnippet={handleSelectSnippet}
+                  onSelectBlock={(bId) => {
+                    handleSelectBlock(bId);
+                    // Sur mobile, ouvrir directement le panneau de style
+                    if (window.innerWidth < 1024) {
+                      setEditorTab('style');
+                      setIsMobileDrawerOpen(true);
+                    }
+                  }}
+                  onSelectSnippet={(sId, bId) => {
+                    handleSelectSnippet(sId, bId);
+                    if (window.innerWidth < 1024) {
+                      setEditorTab('style');
+                      setIsMobileDrawerOpen(true);
+                    }
+                  }}
                   onUpdateSnippet={handleUpdateSnippet}
                   onRemoveSnippet={handleRemoveSnippet}
                   onDuplicateSnippet={handleDuplicateSnippet}
@@ -809,16 +825,28 @@ function ShopStorefrontInner({
             )}
           </main>
 
-          {/* Panneau Latéral Droit Odoo */}
+          {/* Panneau Latéral Droit Odoo / Drawer Coulissant Tactile Mobile */}
           <OdooLiveEditorSidebar
             activeTab={editorTab}
-            onChangeTab={setEditorTab}
+            onChangeTab={(t) => {
+              setEditorTab(t);
+              setIsMobileDrawerOpen(true);
+            }}
+            isMobileDrawerOpen={isMobileDrawerOpen}
+            onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
             blocks={blocks}
             selectedBlockId={selectedBlockId}
             selectedSnippetId={selectedSnippetId}
             onSelectBlock={handleSelectBlock}
             onSelectSnippet={handleSelectSnippet}
-            onAddBlock={handleAddBlock}
+            onAddBlock={(type, index, initialProps) => {
+              handleAddBlock(type, index, initialProps);
+              if (window.innerWidth < 1024) {
+                setIsMobileDrawerOpen(false);
+                setSaveToast('Bloc ajouté à votre vitrine !');
+                setTimeout(() => setSaveToast(''), 3000);
+              }
+            }}
             onUpdateBlockProps={handleUpdateBlockProps}
             onDeleteBlock={handleDeleteBlock}
             onDuplicateBlock={handleDuplicateBlock}
@@ -839,6 +867,79 @@ function ShopStorefrontInner({
               pushHistory(nextLayout);
             }}
           />
+
+          {/* ──── BARRE D'ACTION INFÉRIEURE FLOTTANTE SUR MOBILE (Thumb Navigation) ──── */}
+          <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#16181D]/95 backdrop-blur-md border-t border-slate-800 px-3 py-2 flex items-center justify-around shadow-2xl safe-area-bottom">
+            <button
+              type="button"
+              onClick={() => {
+                setEditorTab('blocks');
+                setIsMobileDrawerOpen(true);
+              }}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                isMobileDrawerOpen && editorTab === 'blocks'
+                  ? 'text-emerald-400 bg-slate-800/80 font-black'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Plus className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-bold">+ Blocs</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditorTab('style');
+                setIsMobileDrawerOpen(true);
+              }}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative cursor-pointer ${
+                isMobileDrawerOpen && editorTab === 'style'
+                  ? 'text-cyan-400 bg-slate-800/80 font-black'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Edit3 className="w-4 h-4 text-cyan-400" />
+              <span className="text-[10px] font-bold">Style</span>
+              {(selectedBlockId || selectedSnippetId) && (
+                <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditorTab('theme');
+                setIsMobileDrawerOpen(true);
+              }}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                isMobileDrawerOpen && editorTab === 'theme'
+                  ? 'text-amber-400 bg-slate-800/80 font-black'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Palette className="w-4 h-4 text-amber-400" />
+              <span className="text-[10px] font-bold">Thème</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('ai_generator')}
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-400 hover:text-purple-300 transition-all cursor-pointer"
+            >
+              <Bot className="w-4 h-4 text-purple-400" />
+              <span className="text-[10px] font-bold">IA</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveLive}
+              disabled={isSaving}
+              className="flex flex-col items-center gap-0.5 px-3.5 py-1.5 rounded-xl bg-[#00D084] hover:bg-[#00B875] text-[#111827] font-black transition-all shadow-md active:scale-95 cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              <span className="text-[10px] uppercase tracking-wider">Sauver</span>
+            </button>
+          </div>
         </div>
       ) : (
         /* Mode Visiteur Public & Commerçant : Défilement naturel et fluide 100% de la fenêtre */

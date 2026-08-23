@@ -236,9 +236,14 @@ export default function OdooLiveCanvasWrapper({
 
   if (deviceMode === 'mobile') {
     return (
-      <div className="w-full flex items-center justify-center py-2 px-2 select-none">
-        {/* 📱 MOCKUP SMARTPHONE AUX DIMENSIONS STANDARDS (Châssis fixe + scroll intérieur) */}
-        <div className="relative w-[385px] max-w-full h-[760px] max-h-[calc(100vh-140px)] rounded-[52px] bg-slate-950 p-[10px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7)] border-4 border-slate-700/80 ring-1 ring-white/10 transition-all duration-300 flex flex-col shrink-0">
+      <div className="w-full flex items-center justify-center py-2 select-none">
+        {/* Sur mobile natif : canvas pleine largeur sans châssis encombrant */}
+        <div className="w-full md:hidden bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-slate-200/90 dark:border-slate-800 p-2 sm:p-4 transition-all">
+          {renderInnerCanvas()}
+        </div>
+
+        {/* 📱 MOCKUP SMARTPHONE (Sur écran Desktop uniquement) */}
+        <div className="hidden md:flex relative w-[385px] max-w-full h-[760px] max-h-[calc(100vh-140px)] rounded-[52px] bg-slate-950 p-[10px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7)] border-4 border-slate-700/80 ring-1 ring-white/10 transition-all duration-300 flex-col shrink-0">
           
           {/* Boutons latéraux physiques (Power & Volume) */}
           <div className="absolute -left-[7px] top-24 w-[3px] h-10 bg-slate-700 rounded-l-sm" />
@@ -281,7 +286,7 @@ export default function OdooLiveCanvasWrapper({
   }
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 shadow-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-3 sm:p-6 transition-all duration-300">
+    <div className="w-full bg-white dark:bg-slate-900 shadow-xl rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 p-2 sm:p-6 transition-all duration-300">
       {renderInnerCanvas()}
     </div>
   );
