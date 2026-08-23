@@ -40,8 +40,11 @@ import OdooTopEditBar from './odoo-editor/OdooTopEditBar';
 import OdooLiveEditorSidebar from './odoo-editor/OdooLiveEditorSidebar';
 import OdooLiveCanvasWrapper from './odoo-editor/OdooLiveCanvasWrapper';
 import OdooQuickProductModal from './odoo-editor/OdooQuickProductModal';
+import VendorManagerModal from './vendor/VendorManagerModal';
 import { syncCatalogDesignWithShopTheme } from '../services/mistralAiService';
 import { recordShopView } from '../services/analyticsService';
+import { getShopFormLeads } from '../services/formsService';
+import { applyWholesaleConfigToProducts } from '../services/wholesaleService';
 
 class StorefrontErrorBoundary extends React.Component {
   constructor(props) {
@@ -109,7 +112,7 @@ function ShopStorefrontInner({
   onShopUpdated,
   initialEditMode = false
 }) {
-  const { totalCount } = useCart();
+  const { totalCount, orders = [] } = useCart();
   const { vendor, updateVendorShop, userProfile, firebaseUser } = useAuth();
   const { themeMode, setThemeMode } = useTheme();
 
@@ -571,6 +574,13 @@ function ShopStorefrontInner({
   };
 
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [isVendorManagerOpen, setIsVendorManagerOpen] = useState(false);
+  const [vendorManagerTab, setVendorManagerTab] = useState('orders');
+
+  const shopId = shop?.id || shop?.code;
+  const currentShopOrders = orders.filter(o => o.shopId === shopId || o.shopId === shop?.id || o.shopId === shop?.code);
+  const leadsList = getShopFormLeads(shopId || 'default');
+  const newLeadsCount = leadsList.filter(l => l.status === 'nouveau' || !l.status).length;
 
   const handleWhatsApp = (phone, name) => {
     const cleanPhone = (phone || '').replace(/\D/g, '');
@@ -659,6 +669,12 @@ function ShopStorefrontInner({
           activePage={activeTab}
           onChangePage={handleChangeActivePage}
           onOpenAiCopilot={() => setActiveTab('ai_generator')}
+          onOpenVendorManager={() => {
+            setVendorManagerTab('orders');
+            setIsVendorManagerOpen(true);
+          }}
+          ordersCount={currentShopOrders.length}
+          leadsCount={newLeadsCount}
           onDiscard={handleDiscardLive}
           onSave={handleSaveLive}
           isSaving={isSaving}
@@ -682,6 +698,21 @@ function ShopStorefrontInner({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setVendorManagerTab('orders');
+                setIsVendorManagerOpen(true);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
+            >
+              <Package className="w-3.5 h-3.5 text-blue-400" />
+              <span>Ventes & CRM</span>
+              {(currentShopOrders.length > 0 || newLeadsCount > 0) && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              )}
+            </button>
+
             <button
               type="button"
               onClick={() => setActiveTab('ai_generator')}
@@ -959,6 +990,21 @@ function ShopStorefrontInner({
               updateShopLayout(shop?.id || shop?.code, newConfig);
               if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
             }}
+            wholesaleConfig={currentLayout.wholesale_config || shop?.layout_config?.wholesale_config || {}}
+            onUpdateWholesaleConfig={(newWholesale) => {
+              const newConfig = {
+                ...currentLayout,
+                wholesale_config: newWholesale
+              };
+              pushHistory(newConfig);
+              updateShopLayout(shop?.id || shop?.code, newConfig);
+              if (onShopUpdated) onShopUpdated({ ...shop, layout_config: newConfig });
+              if (newWholesale.enabled) {
+                applyWholesaleConfigToProducts(newWholesale, shopProductsList.map(p => p.id), shop?.id || shop?.code);
+                setSaveToast('Tarifs grossistes appliqués à la boutique !');
+                setTimeout(() => setSaveToast(''), 3500);
+              }
+            }}
           />
 
           {/* ──── BARRE D'ACTION INFÉRIEURE FLOTTANTE SUR MOBILE (Thumb Navigation) ──── */}
@@ -1141,6 +1187,17 @@ function ShopStorefrontInner({
             setSaveToast('Nouveau produit inséré avec succès !');
             setTimeout(() => setSaveToast(''), 3000);
           }}
+        />
+      )}
+
+      {/* Hub de Gestion Vendeur & CRM (Commandes, Prospects & Stats) */}
+      {isVendorManagerOpen && (
+        <VendorManagerModal
+          isOpen={isVendorManagerOpen}
+          onClose={() => setIsVendorManagerOpen(false)}
+          shop={shop}
+          products={shopProductsList}
+          initialTab={vendorManagerTab}
         />
       )}
 

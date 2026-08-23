@@ -143,7 +143,9 @@ export default function OdooLiveEditorSidebar({
   catalogCardStyle = 'modern',
   onChangeCatalogCardStyle,
   catalogLayoutGrid = 'grid_3',
-  onChangeCatalogLayoutGrid
+  onChangeCatalogLayoutGrid,
+  wholesaleConfig = {},
+  onUpdateWholesaleConfig
 }) {
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
   const blockDef = selectedBlock ? AVAILABLE_BLOCKS.find(ab => ab.type === selectedBlock.type) : null;
@@ -433,7 +435,122 @@ export default function OdooLiveEditorSidebar({
               </div>
             </div>
 
-            {/* 4. TEMPLATES BOUTIQUE ODOO */}
+            {/* 4. TARIFS GROSSISTES DÉGRESSIFS (MOQ) */}
+            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Percent className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Tarifs Grossistes (MOQ)</span>
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newEnabled = !wholesaleConfig.enabled;
+                    onUpdateWholesaleConfig?.({
+                      ...wholesaleConfig,
+                      enabled: newEnabled
+                    });
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
+                    wholesaleConfig.enabled
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {wholesaleConfig.enabled ? 'ACTIF' : 'DÉSACTIVÉ'}
+                </button>
+              </div>
+
+              {wholesaleConfig.enabled ? (
+                <div className="space-y-2.5 pt-1">
+                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-slate-300 font-bold">
+                      <span>Palier 2 (Gros) :</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400">Dès</span>
+                        <input
+                          type="number"
+                          min="2"
+                          max="999"
+                          value={wholesaleConfig.tier2?.minQty || 5}
+                          onChange={(e) => {
+                            const val = Math.max(2, parseInt(e.target.value) || 5);
+                            onUpdateWholesaleConfig?.({
+                              ...wholesaleConfig,
+                              tier2: { ...(wholesaleConfig.tier2 || {}), minQty: val, label: `Gros (-${wholesaleConfig.tier2?.discountPercent || 15}%)` }
+                            });
+                          }}
+                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
+                        />
+                        <span className="text-[10px] text-slate-400">pcs ➔</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={wholesaleConfig.tier2?.discountPercent || 15}
+                          onChange={(e) => {
+                            const val = Math.min(90, Math.max(1, parseInt(e.target.value) || 15));
+                            onUpdateWholesaleConfig?.({
+                              ...wholesaleConfig,
+                              tier2: { ...(wholesaleConfig.tier2 || {}), discountPercent: val, label: `Gros (-${val}%)` }
+                            });
+                          }}
+                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
+                        />
+                        <span className="text-[10px] text-emerald-400 font-bold">%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-slate-300 font-bold">
+                      <span>Palier 3 (VIP) :</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400">Dès</span>
+                        <input
+                          type="number"
+                          min="5"
+                          max="9999"
+                          value={wholesaleConfig.tier3?.minQty || 20}
+                          onChange={(e) => {
+                            const val = Math.max(5, parseInt(e.target.value) || 20);
+                            onUpdateWholesaleConfig?.({
+                              ...wholesaleConfig,
+                              tier3: { ...(wholesaleConfig.tier3 || {}), minQty: val, label: `VIP (-${wholesaleConfig.tier3?.discountPercent || 25}%)` }
+                            });
+                          }}
+                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
+                        />
+                        <span className="text-[10px] text-slate-400">pcs ➔</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="95"
+                          value={wholesaleConfig.tier3?.discountPercent || 25}
+                          onChange={(e) => {
+                            const val = Math.min(95, Math.max(1, parseInt(e.target.value) || 25));
+                            onUpdateWholesaleConfig?.({
+                              ...wholesaleConfig,
+                              tier3: { ...(wholesaleConfig.tier3 || {}), discountPercent: val, label: `VIP (-${val}%)` }
+                            });
+                          }}
+                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
+                        />
+                        <span className="text-[10px] text-emerald-400 font-bold">%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic">
+                    Ces remises de volume s'appliquent automatiquement dans le panier et sur les fiches produits.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-500">
+                  Activez pour récompenser les clients qui commandent en gros avec des remises automatiques.
+                </p>
+              )}
+            </div>
+
+            {/* 5. TEMPLATES BOUTIQUE ODOO */}
             <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <Store className="w-3.5 h-3.5 text-amber-400" />

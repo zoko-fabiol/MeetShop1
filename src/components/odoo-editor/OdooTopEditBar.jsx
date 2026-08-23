@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Home,
   ShoppingBag,
+  Package,
   Menu,
   SlidersHorizontal
 } from 'lucide-react';
@@ -27,6 +28,9 @@ export default function OdooTopEditBar({
   activePage = 'home', // 'home' | 'catalog'
   onChangePage,
   onOpenAiCopilot,
+  onOpenVendorManager,
+  ordersCount = 0,
+  leadsCount = 0,
   onDiscard,
   onSave,
   isSaving = false,
@@ -161,6 +165,20 @@ export default function OdooTopEditBar({
         >
           <Bot className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">IA Copilote</span>
+        </button>
+
+        {/* Bouton Hub Ventes & CRM */}
+        <button
+          type="button"
+          onClick={onOpenVendorManager}
+          className="px-2 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center gap-1.5 border border-slate-700 active:scale-95 transition-all cursor-pointer relative"
+          title="Commandes, Prospects et Statistiques de vente"
+        >
+          <Package className="w-3.5 h-3.5 text-blue-400" />
+          <span className="hidden md:inline">Ventes & CRM</span>
+          {(ordersCount > 0 || leadsCount > 0) && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          )}
         </button>
 
       </div>
