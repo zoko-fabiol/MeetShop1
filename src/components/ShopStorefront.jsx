@@ -22,6 +22,7 @@ import {
   Bot,
   Home,
   Wand2,
+  Package,
   X
 } from 'lucide-react';
 import BlockRenderer from './shop-blocks/BlockRenderer';
