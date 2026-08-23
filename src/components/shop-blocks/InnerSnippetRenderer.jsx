@@ -59,6 +59,22 @@ export default function InnerSnippetRenderer({
   const titleStyle = getCustomColorStyle(props.titleColor);
   const textStyle = getCustomColorStyle(props.textColor);
 
+  const customContainerStyle = {
+    ...(props.bgColor && props.bgColor !== 'transparent' ? { backgroundColor: props.bgColor } : props.bgColor === 'transparent' ? { backgroundColor: 'transparent' } : {}),
+    ...(props.borderColor ? { borderColor: props.borderColor } : {}),
+    ...(props.borderWidth ? { borderWidth: `${props.borderWidth}px` } : {})
+  };
+
+  const hoverEffectClass = props.hoverEffect === 'scale' 
+    ? 'hover:scale-[1.03]' 
+    : props.hoverEffect === 'glow' 
+      ? 'hover:shadow-[0_0_20px_rgba(16,185,129,0.35)]' 
+      : props.hoverEffect === 'lift' 
+        ? 'hover:-translate-y-1' 
+        : props.hoverEffect === 'brightness' 
+          ? 'hover:brightness-110' 
+          : '';
+
   const spacingClass = props.spacing === 'compact' 
     ? 'p-2.5 sm:p-3' 
     : props.spacing === 'spacious' 
@@ -164,7 +180,10 @@ export default function InnerSnippetRenderer({
   }
 
   return (
-    <div className={`w-full max-w-full min-w-0 overflow-hidden break-words transition-all duration-300 ${spacingClass} ${shape.class} ${border.class} ${shadow.class} ${dv.containerClass}`}>
+    <div 
+      style={customContainerStyle}
+      className={`w-full max-w-full min-w-0 overflow-hidden break-words transition-all duration-300 ${spacingClass} ${shape.class} ${border.class} ${shadow.class} ${dv.containerClass} ${hoverEffectClass}`}
+    >
       
       {/* 1. ÉVALUATION (ÉTOILES & AVIS) */}
       {snippetType === 'rating' && (

@@ -277,10 +277,10 @@ export default function OdooLiveEditorSidebar({
           </button>
         </div>
 
-        {/* ──── ONGLETS SUPÉRIEURS ODOO (Blocs / Catalogue | Style | Thème) ──── */}
+        {/* ──── ONGLETS SUPÉRIEURS DYNAMIQUES & CONTEXTUELS ──── */}
         <div className="flex items-center border-b border-slate-800 bg-[#121418] shrink-0">
           
-          {/* Onglet 1 : Blocs (Accueil) OU Catalogue (Boutique) */}
+          {/* Onglet 1 : Contextuel (Éléments si Snippet actif | Contenus si Bloc actif | Blocs / Catalogue si Global) */}
           <button
             type="button"
             onClick={() => onChangeTab('blocks')}
@@ -290,7 +290,17 @@ export default function OdooLiveEditorSidebar({
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30'
             }`}
           >
-            {activePage === 'catalog' ? (
+            {activeSnippet ? (
+              <>
+                <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Éléments</span>
+              </>
+            ) : selectedBlock ? (
+              <>
+                <Plus className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Contenus</span>
+              </>
+            ) : activePage === 'catalog' ? (
               <>
                 <ShoppingBag className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Catalogue</span>
@@ -303,7 +313,7 @@ export default function OdooLiveEditorSidebar({
             )}
           </button>
 
-          {/* Onglet 2 : ✏️ Style */}
+          {/* Onglet 2 : Style Contextuel (Style Élément | Style Section | Structure Globale) */}
           <button
             type="button"
             onClick={() => onChangeTab('style')}
@@ -314,11 +324,13 @@ export default function OdooLiveEditorSidebar({
             }`}
           >
             <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Style</span>
+            <span>
+              {activeSnippet ? 'Style Élément' : selectedBlock ? 'Style Section' : 'Structure'}
+            </span>
             {(selectedBlock || activeSnippet) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
           </button>
 
-          {/* Onglet 3 : 🎨 Thème */}
+          {/* Onglet 3 : Thème & Couleurs Contextuels (Couleurs Élément | Ambiance Section | Thème Global) */}
           <button
             type="button"
             onClick={() => onChangeTab('theme')}
@@ -329,7 +341,9 @@ export default function OdooLiveEditorSidebar({
             }`}
           >
             <Palette className="w-3.5 h-3.5 text-amber-400" />
-            <span>Thème</span>
+            <span>
+              {activeSnippet ? 'Couleurs' : selectedBlock ? 'Ambiance' : 'Thème Global'}
+            </span>
           </button>
 
         </div>
@@ -338,360 +352,564 @@ export default function OdooLiveEditorSidebar({
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
         
         {/* ═══════════════════════════════════════════════════════
-            VUE 1 : CATALOGUE (SI PAGE BOUTIQUE) OU BLOCS (SI ACCUEIL)
+            VUE 1 : CONTEXTUELLE (ÉLÉMENTS SI SNIPPET | CONTENUS SI BLOC | CATALOGUE SI BOUTIQUE | BLOCS SI GLOBAL)
            ═══════════════════════════════════════════════════════ */}
-        {activeTab === 'blocks' && activePage === 'catalog' && (
-          <div className="space-y-5 animate-fadeIn">
-            
-            {/* 1. ACTIONS RAPIDES DU CATALOGUE */}
-            <div className="space-y-2.5">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
-                Gestion des Produits
-              </span>
+        {activeTab === 'blocks' && (
+          <div className="space-y-6 animate-fadeIn">
 
-              <button
-                type="button"
-                onClick={onOpenAddProduct}
-                className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Ajouter un Produit</span>
-              </button>
+            {/* CAS 1 : UN CONTENU INTÉRIEUR (SNIPPET) EST ACTIF */}
+            {activeSnippet && activeSnippetHostBlockId ? (
+              <div className="space-y-4">
+                {/* Fil d'Ariane Contextuel */}
+                <div className="p-3 rounded-2xl bg-[#1D2027] border border-emerald-500/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-emerald-400 block">
+                      {selectedBlock?.type || 'Section'} ➔ Sous-Élément
+                    </span>
+                    <h4 className="font-extrabold text-xs text-white truncate max-w-[200px]">
+                      {snipData.label || snipData.title || snipData.name || snipType}
+                    </h4>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onDuplicateSnippet?.(activeSnippetHostBlockId, activeSnippet.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      title="Dupliquer cet élément"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveSnippet?.(activeSnippetHostBlockId, activeSnippet.id)}
+                      className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 hover:text-rose-300 cursor-pointer"
+                      title="Supprimer cet élément"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-              <button
-                type="button"
-                onClick={onSyncCatalogWithAi}
-                disabled={isAiSyncing}
-                className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-              >
-                <Sparkles className={`w-3.5 h-3.5 ${isAiSyncing ? 'animate-spin' : ''}`} />
-                <span>{isAiSyncing ? 'Harmonisation IA en cours...' : 'Harmoniser le Design via IA'}</span>
-              </button>
-            </div>
-
-            {/* 2. DESIGN DES CARTES PRODUITS */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Style des Cartes Produits</span>
-              </span>
-
-              <div className="grid grid-cols-1 gap-1.5">
-                {[
-                  { id: 'modern', label: '🌟 Moderne & Arrondi', desc: 'Design épuré avec bouton panier flottant' },
-                  { id: 'neo_brutalist', label: '⚡ Néo-Brutaliste', desc: 'Bordures nettes, ombres dures et fort contraste' },
-                  { id: 'glassmorphism', label: '💎 Glassmorphism', desc: 'Effet verre dépoli moderne et translucide' },
-                  { id: 'luxury_minimal', label: '👑 Luxe Épuré', desc: 'Typographie fine, minimalisme haute couture' },
-                  { id: 'compact_merchant', label: '📦 Compact Marchand', desc: 'Densité optimale pour gros catalogues' }
-                ].map(st => (
-                  <button
-                    key={st.id}
-                    type="button"
-                    onClick={() => onChangeCatalogCardStyle?.(st.id)}
-                    className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${
-                      catalogCardStyle === st.id
-                        ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold ring-1 ring-emerald-500 shadow-sm'
-                        : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
-                    }`}
-                  >
-                    <div className="text-xs font-bold flex items-center justify-between">
-                      <span>{st.label}</span>
-                      {catalogCardStyle === st.id && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{st.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 3. DISPOSITION DE LA GRILLE */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Affichage de la Grille</span>
-              </span>
-
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'grid_3', label: '3 Colonnes', icon: Grid3x3 },
-                  { id: 'grid_2', label: '2 Colonnes', icon: Grid2x2 },
-                  { id: 'grid_4', label: '4 Colonnes', icon: LayoutGrid },
-                  { id: 'list', label: 'Mode Liste', icon: AlignLeft }
-                ].map(gr => (
-                  <button
-                    key={gr.id}
-                    type="button"
-                    onClick={() => onChangeCatalogLayoutGrid?.(gr.id)}
-                    className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border cursor-pointer ${
-                      catalogLayoutGrid === gr.id
-                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <gr.icon className="w-3.5 h-3.5" />
-                    <span>{gr.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 4. TARIFS GROSSISTES DÉGRESSIFS (MOQ) */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Percent className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Tarifs Grossistes (MOQ)</span>
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newEnabled = !wholesaleConfig.enabled;
-                    onUpdateWholesaleConfig?.({
-                      ...wholesaleConfig,
-                      enabled: newEnabled
-                    });
-                  }}
-                  className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
-                    wholesaleConfig.enabled
-                      ? 'bg-emerald-500 text-white shadow-sm'
-                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {wholesaleConfig.enabled ? 'ACTIF' : 'DÉSACTIVÉ'}
-                </button>
-              </div>
-
-              {wholesaleConfig.enabled ? (
-                <div className="space-y-2.5 pt-1">
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs">
-                    <div className="flex items-center justify-between text-slate-300 font-bold">
-                      <span>Palier 2 (Gros) :</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400">Dès</span>
-                        <input
-                          type="number"
-                          min="2"
-                          max="999"
-                          value={wholesaleConfig.tier2?.minQty || 5}
-                          onChange={(e) => {
-                            const val = Math.max(2, parseInt(e.target.value) || 5);
-                            onUpdateWholesaleConfig?.({
-                              ...wholesaleConfig,
-                              tier2: { ...(wholesaleConfig.tier2 || {}), minQty: val, label: `Gros (-${wholesaleConfig.tier2?.discountPercent || 15}%)` }
-                            });
-                          }}
-                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
-                        />
-                        <span className="text-[10px] text-slate-400">pcs ➔</span>
-                        <input
-                          type="number"
-                          min="1"
-                          max="90"
-                          value={wholesaleConfig.tier2?.discountPercent || 15}
-                          onChange={(e) => {
-                            const val = Math.min(90, Math.max(1, parseInt(e.target.value) || 15));
-                            onUpdateWholesaleConfig?.({
-                              ...wholesaleConfig,
-                              tier2: { ...(wholesaleConfig.tier2 || {}), discountPercent: val, label: `Gros (-${val}%)` }
-                            });
-                          }}
-                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
-                        />
-                        <span className="text-[10px] text-emerald-400 font-bold">%</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-slate-300 font-bold">
-                      <span>Palier 3 (VIP) :</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-slate-400">Dès</span>
-                        <input
-                          type="number"
-                          min="5"
-                          max="9999"
-                          value={wholesaleConfig.tier3?.minQty || 20}
-                          onChange={(e) => {
-                            const val = Math.max(5, parseInt(e.target.value) || 20);
-                            onUpdateWholesaleConfig?.({
-                              ...wholesaleConfig,
-                              tier3: { ...(wholesaleConfig.tier3 || {}), minQty: val, label: `VIP (-${wholesaleConfig.tier3?.discountPercent || 25}%)` }
-                            });
-                          }}
-                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
-                        />
-                        <span className="text-[10px] text-slate-400">pcs ➔</span>
-                        <input
-                          type="number"
-                          min="1"
-                          max="95"
-                          value={wholesaleConfig.tier3?.discountPercent || 25}
-                          onChange={(e) => {
-                            const val = Math.min(95, Math.max(1, parseInt(e.target.value) || 25));
-                            onUpdateWholesaleConfig?.({
-                              ...wholesaleConfig,
-                              tier3: { ...(wholesaleConfig.tier3 || {}), discountPercent: val, label: `VIP (-${val}%)` }
-                            });
-                          }}
-                          className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
-                        />
-                        <span className="text-[10px] text-emerald-400 font-bold">%</span>
-                      </div>
+                {/* Sélecteur rapide des éléments frères dans ce bloc */}
+                {nestedSnippets.length > 1 && (
+                  <div className="space-y-1.5 p-3 rounded-2xl bg-[#1D2027] border border-slate-800">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                      Éléments dans cette section ({nestedSnippets.length})
+                    </span>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      {nestedSnippets.map((s, idx) => {
+                        const isCur = s.id === activeSnippet.id;
+                        return (
+                          <button
+                            key={s.id || idx}
+                            type="button"
+                            onClick={() => onSelectSnippet?.(s.id, activeSnippetHostBlockId)}
+                            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold shrink-0 transition-all border cursor-pointer ${
+                              isCur
+                                ? 'bg-emerald-500 text-white border-emerald-400 shadow-sm ring-1 ring-emerald-400'
+                                : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                            }`}
+                          >
+                            {s.title || s.name || s.snippetType || `Élément ${idx + 1}`}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">
-                    Ces remises de volume s'appliquent automatiquement dans le panier et sur les fiches produits.
-                  </p>
+                )}
+
+                {/* Ajouter un autre élément dans cette section */}
+                <div className="space-y-2.5 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                      + Ajouter un autre élément
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      Dans {selectedBlock?.type || 'Section'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {ODOO_INNER_SNIPPETS.map((snip) => {
+                      const Icon = snip.icon;
+                      return (
+                        <div
+                          key={snip.id}
+                          onClick={() => handleAddInnerSnippetToSelectedBlock(snip)}
+                          className="p-2.5 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-pointer group shadow-sm flex flex-col justify-between h-20"
+                          title={snip.desc}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="p-1 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
+                              <Icon className="w-3.5 h-3.5" />
+                            </span>
+                            <Plus className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-[11px] text-slate-200 block truncate">{snip.name}</span>
+                            <span className="text-[9px] text-slate-500 block truncate">{snip.desc}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              ) : (
-                <p className="text-[10px] text-slate-500">
-                  Activez pour récompenser les clients qui commandent en gros avec des remises automatiques.
-                </p>
-              )}
-            </div>
-
-            {/* 5. TEMPLATES BOUTIQUE ODOO */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Store className="w-3.5 h-3.5 text-amber-400" />
-                <span>Thème de Boutique Odoo</span>
-              </span>
-
-              <div className="grid grid-cols-1 gap-1.5">
-                {ODOO_SHOP_TEMPLATES.map(tmpl => (
-                  <button
-                    key={tmpl.id}
-                    type="button"
-                    onClick={() => onChangeShopTemplate?.(tmpl.id)}
-                    className={`p-2 rounded-xl text-left transition-all border cursor-pointer flex items-center justify-between ${
-                      shopTemplate === tmpl.id
-                        ? 'bg-amber-500/15 border-amber-500 text-white font-bold'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
+              </div>
+            ) : selectedBlock ? (
+              /* CAS 2 : UN BLOC DE SECTION EST SÉLECTIONNÉ (SANS SNIPPET SPÉCIFIQUE) */
+              <div className="space-y-4">
+                {/* En-tête du bloc sélectionné */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-emerald-500/40 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                      <Layers className="w-4 h-4" />
+                    </span>
                     <div>
-                      <span className="text-xs font-bold text-slate-200">{tmpl.name}</span>
-                      <p className="text-[10px] text-slate-500">{tmpl.description}</p>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+                        Section Sélectionnée
+                      </span>
+                      <h4 className="font-black text-xs text-white">
+                        {blockDef?.name || selectedBlock.type}
+                      </h4>
                     </div>
-                    {shopTemplate === tmpl.id && <Check className="w-3.5 h-3.5 text-amber-400" />}
-                  </button>
-                ))}
-              </div>
-            </div>
+                  </div>
 
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════
-            VUE 1 : BLOCS & SNIPPETS (SI PAGE ACCUEIL)
-           ═══════════════════════════════════════════════════════ */}
-        {activeTab === 'blocks' && activePage !== 'catalog' && (
-          <div className="space-y-6 animate-fadeIn">
-            
-            {/* 1. GRANDS BLOCS STRUCTURELS */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                  Structure & Sections
-                </span>
-                <span className="text-[10px] text-slate-500 font-mono">Glisser sur la page</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {AVAILABLE_BLOCKS.map((ab) => {
-                  return (
-                    <div
-                      key={ab.type}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('application/json', JSON.stringify({
-                          isNewBlock: true,
-                          blockType: ab.type,
-                          initialProps: ab.defaultProps || {}
-                        }));
-                      }}
-                      onClick={() => onAddBlock?.(ab.type)}
-                      className="p-3 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-grab active:cursor-grabbing group shadow-sm flex flex-col justify-between h-24"
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onMoveBlock?.(selectedBlock.id, 'up')}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      title="Monter"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="p-1.5 rounded-xl bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
-                          <Layers className="w-4 h-4" />
-                        </span>
-                        <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors" />
-                      </div>
-                      <div>
-                        <h4 className="font-extrabold text-xs text-white truncate">{ab.name}</h4>
-                        <p className="text-[10px] text-slate-400 truncate">{ab.category}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 2. CONTENUS INTÉRIEURS (SNIPPETS POSITIONNABLES & REDIMENSIONNABLES) */}
-            <div className="space-y-2.5 pt-4 border-t border-slate-800/80">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                  Contenus intérieurs
-                </span>
-                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                  {selectedBlock ? 'Insérer dans le bloc' : '20+ Éléments'}
-                </span>
-              </div>
-
-              {selectedBlock && (
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 shrink-0" />
-                  <span>Cliquez pour insérer directement dans <strong>{selectedBlock.type}</strong></span>
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onMoveBlock?.(selectedBlock.id, 'down')}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      title="Descendre"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDuplicateBlock?.(selectedBlock.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                      title="Dupliquer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteBlock?.(selectedBlock.id)}
+                      className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 hover:text-rose-300 cursor-pointer"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              <div className="grid grid-cols-2 gap-2">
-                {ODOO_INNER_SNIPPETS.map((snip) => {
-                  const Icon = snip.icon;
-
-                  return (
-                    <div
-                      key={snip.id}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('application/json', JSON.stringify({
-                          isNewBlock: true,
-                          blockType: 'InnerSnippet',
-                          initialProps: {
-                            snippetType: snip.id,
-                            designVariant: 'modern_minimal',
-                            title: snip.name,
-                            width: '100%',
-                            alignment: 'stretch',
-                            spacing: 'normal',
-                            badge: 'Top Tendance',
-                            ratingScore: '4.9',
-                            reviewsCount: '142',
-                            progressPercent: 78
-                          }
-                        }));
-                      }}
-                      onClick={() => handleAddInnerSnippetToSelectedBlock(snip)}
-                      className="p-2.5 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-grab active:cursor-grabbing group shadow-sm flex flex-col justify-between h-20"
-                      title={snip.desc}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="p-1 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
-                          <Icon className="w-3.5 h-3.5" />
-                        </span>
-                        <Plus className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
-                      </div>
-                      <div>
-                        <span className="font-bold text-[11px] text-slate-200 block truncate">{snip.name}</span>
-                        <span className="text-[9px] text-slate-500 block truncate">{snip.desc}</span>
-                      </div>
+                {/* Éléments intérieurs déjà présents dans ce bloc */}
+                {nestedSnippets.length > 0 && (
+                  <div className="space-y-2 p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                      Contenus dans cette section ({nestedSnippets.length})
+                    </span>
+                    <div className="space-y-1.5">
+                      {nestedSnippets.map((snip, idx) => (
+                        <div
+                          key={snip.id || idx}
+                          onClick={() => onSelectSnippet?.(snip.id, selectedBlock.id)}
+                          className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 flex items-center justify-between text-xs cursor-pointer transition-all group"
+                        >
+                          <span className="font-bold text-slate-200 group-hover:text-emerald-400 truncate">
+                            {snip.title || snip.name || snip.snippetType || `Élément ${idx + 1}`}
+                          </span>
+                          <span className="text-[10px] text-slate-500 group-hover:text-slate-300">Modifier ➔</span>
+                        </div>
+                      ))}
                     </div>
-                  );
-                })}
+                  </div>
+                )}
+
+                {/* Bibliothèque d'éléments à insérer dans ce bloc */}
+                <div className="space-y-2.5 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                      + Insérer un élément
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      Dans {selectedBlock.type}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {ODOO_INNER_SNIPPETS.map((snip) => {
+                      const Icon = snip.icon;
+                      return (
+                        <div
+                          key={snip.id}
+                          onClick={() => handleAddInnerSnippetToSelectedBlock(snip)}
+                          className="p-2.5 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-pointer group shadow-sm flex flex-col justify-between h-20"
+                          title={snip.desc}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="p-1 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
+                              <Icon className="w-3.5 h-3.5" />
+                            </span>
+                            <Plus className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-[11px] text-slate-200 block truncate">{snip.name}</span>
+                            <span className="text-[9px] text-slate-500 block truncate">{snip.desc}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : activePage === 'catalog' ? (
+              /* CAS 3 : PAGE CATALOGUE (SANS SÉLECTION PARTICULIÈRE) */
+              <div className="space-y-5">
+                {/* 1. ACTIONS RAPIDES DU CATALOGUE */}
+                <div className="space-y-2.5">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Gestion des Produits
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={onOpenAddProduct}
+                    className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Ajouter un Produit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onSyncCatalogWithAi}
+                    disabled={isAiSyncing}
+                    className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <Sparkles className={`w-3.5 h-3.5 ${isAiSyncing ? 'animate-spin' : ''}`} />
+                    <span>{isAiSyncing ? 'Harmonisation IA en cours...' : 'Harmoniser le Design via IA'}</span>
+                  </button>
+                </div>
+
+                {/* 2. DESIGN DES CARTES PRODUITS */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Style des Cartes Produits</span>
+                  </span>
+
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {[
+                      { id: 'modern', label: '🌟 Moderne & Arrondi', desc: 'Design épuré avec bouton panier flottant' },
+                      { id: 'neo_brutalist', label: '⚡ Néo-Brutaliste', desc: 'Bordures nettes, ombres dures et fort contraste' },
+                      { id: 'glassmorphism', label: '💎 Glassmorphism', desc: 'Effet verre dépoli moderne et translucide' },
+                      { id: 'luxury_minimal', label: '👑 Luxe Épuré', desc: 'Typographie fine, minimalisme haute couture' },
+                      { id: 'compact_merchant', label: '📦 Compact Marchand', desc: 'Densité optimale pour gros catalogues' }
+                    ].map(st => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => onChangeCatalogCardStyle?.(st.id)}
+                        className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${
+                          catalogCardStyle === st.id
+                            ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold ring-1 ring-emerald-500 shadow-sm'
+                            : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
+                        }`}
+                      >
+                        <div className="text-xs font-bold flex items-center justify-between">
+                          <span>{st.label}</span>
+                          {catalogCardStyle === st.id && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{st.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. DISPOSITION DE LA GRILLE */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Affichage de la Grille</span>
+                  </span>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'grid_3', label: '3 Colonnes', icon: Grid3x3 },
+                      { id: 'grid_2', label: '2 Colonnes', icon: Grid2x2 },
+                      { id: 'grid_4', label: '4 Colonnes', icon: LayoutGrid },
+                      { id: 'list', label: 'Mode Liste', icon: AlignLeft }
+                    ].map(gr => (
+                      <button
+                        key={gr.id}
+                        type="button"
+                        onClick={() => onChangeCatalogLayoutGrid?.(gr.id)}
+                        className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border cursor-pointer ${
+                          catalogLayoutGrid === gr.id
+                            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <gr.icon className="w-3.5 h-3.5" />
+                        <span>{gr.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. TARIFS GROSSISTES DÉGRESSIFS (MOQ) */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                      <Percent className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Tarifs Grossistes (MOQ)</span>
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newEnabled = !wholesaleConfig.enabled;
+                        onUpdateWholesaleConfig?.({
+                          ...wholesaleConfig,
+                          enabled: newEnabled
+                        });
+                      }}
+                      className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
+                        wholesaleConfig.enabled
+                          ? 'bg-emerald-500 text-white shadow-sm'
+                          : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {wholesaleConfig.enabled ? 'ACTIF' : 'DÉSACTIVÉ'}
+                    </button>
+                  </div>
+
+                  {wholesaleConfig.enabled ? (
+                    <div className="space-y-2.5 pt-1">
+                      <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-slate-300 font-bold">
+                          <span>Palier 2 (Gros) :</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-400">Dès</span>
+                            <input
+                              type="number"
+                              min="2"
+                              max="999"
+                              value={wholesaleConfig.tier2?.minQty || 5}
+                              onChange={(e) => {
+                                const val = Math.max(2, parseInt(e.target.value) || 5);
+                                onUpdateWholesaleConfig?.({
+                                  ...wholesaleConfig,
+                                  tier2: { ...(wholesaleConfig.tier2 || {}), minQty: val, label: `Gros (-${wholesaleConfig.tier2?.discountPercent || 15}%)` }
+                                });
+                              }}
+                              className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
+                            />
+                            <span className="text-[10px] text-slate-400">pcs ➔</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="90"
+                              value={wholesaleConfig.tier2?.discountPercent || 15}
+                              onChange={(e) => {
+                                const val = Math.min(90, Math.max(1, parseInt(e.target.value) || 15));
+                                onUpdateWholesaleConfig?.({
+                                  ...wholesaleConfig,
+                                  tier2: { ...(wholesaleConfig.tier2 || {}), discountPercent: val, label: `Gros (-${val}%)` }
+                                });
+                              }}
+                              className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
+                            />
+                            <span className="text-[10px] text-emerald-400 font-bold">%</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-slate-300 font-bold">
+                          <span>Palier 3 (VIP) :</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-400">Dès</span>
+                            <input
+                              type="number"
+                              min="5"
+                              max="9999"
+                              value={wholesaleConfig.tier3?.minQty || 20}
+                              onChange={(e) => {
+                                const val = Math.max(5, parseInt(e.target.value) || 20);
+                                onUpdateWholesaleConfig?.({
+                                  ...wholesaleConfig,
+                                  tier3: { ...(wholesaleConfig.tier3 || {}), minQty: val, label: `VIP (-${wholesaleConfig.tier3?.discountPercent || 25}%)` }
+                                });
+                              }}
+                              className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs"
+                            />
+                            <span className="text-[10px] text-slate-400">pcs ➔</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="95"
+                              value={wholesaleConfig.tier3?.discountPercent || 25}
+                              onChange={(e) => {
+                                const val = Math.min(95, Math.max(1, parseInt(e.target.value) || 25));
+                                onUpdateWholesaleConfig?.({
+                                  ...wholesaleConfig,
+                                  tier3: { ...(wholesaleConfig.tier3 || {}), discountPercent: val, label: `VIP (-${val}%)` }
+                                });
+                              }}
+                              className="w-12 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-center font-mono font-bold text-emerald-400 text-xs"
+                            />
+                            <span className="text-[10px] text-emerald-400 font-bold">%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-slate-400 italic">
+                        Ces remises de volume s'appliquent automatiquement dans le panier et sur les fiches produits.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-slate-500">
+                      Activez pour récompenser les clients qui commandent en gros avec des remises automatiques.
+                    </p>
+                  )}
+                </div>
+
+                {/* 5. TEMPLATES BOUTIQUE ODOO */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <Store className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Thème de Boutique Odoo</span>
+                  </span>
+
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {ODOO_SHOP_TEMPLATES.map(tmpl => (
+                      <button
+                        key={tmpl.id}
+                        type="button"
+                        onClick={() => onChangeShopTemplate?.(tmpl.id)}
+                        className={`p-2 rounded-xl text-left transition-all border cursor-pointer flex items-center justify-between ${
+                          shopTemplate === tmpl.id
+                            ? 'bg-amber-500/15 border-amber-500 text-white font-bold'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div>
+                          <span className="text-xs font-bold text-slate-200">{tmpl.name}</span>
+                          <p className="text-[10px] text-slate-500">{tmpl.description}</p>
+                        </div>
+                        {shopTemplate === tmpl.id && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* CAS 4 : VUE GLOBALE ACCUEIL (SANS SÉLECTION PARTICULIÈRE) */
+              <div className="space-y-6">
+                {/* 1. GRANDS BLOCS STRUCTURELS */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                      Structure & Sections
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">Glisser sur la page</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {AVAILABLE_BLOCKS.map((ab) => {
+                      return (
+                        <div
+                          key={ab.type}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/json', JSON.stringify({
+                              isNewBlock: true,
+                              blockType: ab.type,
+                              initialProps: ab.defaultProps || {}
+                            }));
+                          }}
+                          onClick={() => onAddBlock?.(ab.type)}
+                          className="p-3 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-grab active:cursor-grabbing group shadow-sm flex flex-col justify-between h-24"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="p-1.5 rounded-xl bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
+                              <Layers className="w-4 h-4" />
+                            </span>
+                            <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-xs text-white truncate">{ab.name}</h4>
+                            <p className="text-[10px] text-slate-400 truncate">{ab.category}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. CONTENUS INTÉRIEURS */}
+                <div className="space-y-2.5 pt-4 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                      Contenus intérieurs
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      20+ Éléments
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {ODOO_INNER_SNIPPETS.map((snip) => {
+                      const Icon = snip.icon;
+                      return (
+                        <div
+                          key={snip.id}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/json', JSON.stringify({
+                              isNewBlock: true,
+                              blockType: 'InnerSnippet',
+                              initialProps: {
+                                snippetType: snip.id,
+                                designVariant: 'modern_minimal',
+                                title: snip.name,
+                                width: '100%',
+                                alignment: 'stretch',
+                                spacing: 'normal',
+                                badge: 'Top Tendance',
+                                ratingScore: '4.9',
+                                reviewsCount: '142',
+                                progressPercent: 78
+                              }
+                            }));
+                          }}
+                          onClick={() => handleAddInnerSnippetToSelectedBlock(snip)}
+                          className="p-2.5 rounded-2xl bg-[#1D2027] hover:bg-[#252932] border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-grab active:cursor-grabbing group shadow-sm flex flex-col justify-between h-20"
+                          title={snip.desc}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="p-1 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400 transition-colors">
+                              <Icon className="w-3.5 h-3.5" />
+                            </span>
+                            <Plus className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-[11px] text-slate-200 block truncate">{snip.name}</span>
+                            <span className="text-[9px] text-slate-500 block truncate">{snip.desc}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         )}
@@ -1701,276 +1919,716 @@ export default function OdooLiveEditorSidebar({
 
               </div>
             ) : (
-              /* Cas C : Rien de sélectionné */
-              <div className="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto text-slate-500">
-                  <Edit3 className="w-6 h-6" />
+              /* Cas C : Rien de sélectionné ➔ ARBORESCENCE & STRUCTURE DE LA PAGE */
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                    Structure de la Page ({blocks.length} Sections)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onChangeTab('blocks')}
+                    className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>+ Ajouter</span>
+                  </button>
                 </div>
-                <h4 className="font-extrabold text-xs text-slate-300">Aucun bloc ou contenu sélectionné</h4>
-                <p className="text-[11px] text-slate-500">
-                  Cliquez sur n'importe quel bloc ou contenu intérieur sur la page pour inspecter et modifier ses dimensions, position et style en direct.
-                </p>
+
+                <div className="space-y-2">
+                  {blocks.map((b, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === blocks.length - 1;
+                    const isHidden = b.visible === false;
+                    const bDef = AVAILABLE_BLOCKS.find(ab => ab.type === b.type);
+
+                    return (
+                      <div
+                        key={b.id || idx}
+                        onClick={() => onSelectBlock?.(b.id)}
+                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
+                          selectedBlock?.id === b.id
+                            ? 'bg-emerald-500/15 border-emerald-500 text-white shadow-sm ring-1 ring-emerald-500/50'
+                            : isHidden
+                              ? 'bg-slate-950/60 border-slate-900 text-slate-500 opacity-60'
+                              : 'bg-[#1D2027] border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-[#232730]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-[10px] font-mono font-bold text-slate-500 w-4 text-center">
+                            {idx + 1}
+                          </span>
+                          <span className="p-1.5 rounded-xl bg-slate-800 group-hover:bg-emerald-500/20 text-emerald-400">
+                            <Layers className="w-3.5 h-3.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <h4 className="font-black text-xs text-white truncate">
+                              {b.props?.title || bDef?.name || b.type}
+                            </h4>
+                            <span className="text-[9px] text-slate-500 block truncate">
+                              {bDef?.category || 'Section'} • {b.type}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions d'arborescence */}
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            disabled={isFirst}
+                            onClick={() => onMoveBlock?.(b.id, 'up')}
+                            className={`p-1 rounded-lg ${isFirst ? 'opacity-20 cursor-not-allowed text-slate-600' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer'}`}
+                            title="Monter"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isLast}
+                            onClick={() => onMoveBlock?.(b.id, 'down')}
+                            className={`p-1 rounded-lg ${isLast ? 'opacity-20 cursor-not-allowed text-slate-600' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer'}`}
+                            title="Descendre"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateBlockProps?.(b.id, { visible: isHidden ? true : false })}
+                            className={`p-1 rounded-lg ${isHidden ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'} cursor-pointer`}
+                            title={isHidden ? 'Afficher' : 'Masquer'}
+                          >
+                            <Eye className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDuplicateBlock?.(b.id)}
+                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                            title="Dupliquer"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDeleteBlock?.(b.id)}
+                            className="p-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 hover:text-rose-300 cursor-pointer"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span>Cliquez sur une section pour ajuster son contenu et son style.</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         )}
 
         {/* ═══════════════════════════════════════════════════════
-            VUE 3 : 🎨 THÈME GLOBAL (Fidèle à 100% aux Captures Odoo)
+            VUE 3 : 🎨 THÈME & COULEURS CONTEXTUELS
            ═══════════════════════════════════════════════════════ */}
         {activeTab === 'theme' && (
           <div className="space-y-4 animate-fadeIn text-xs">
             
-            {/* 1. SECTION SITE WEB */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
-              <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
-                Site web
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-semibold">Couleurs</span>
-                <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-                  <span className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: currentThemeTokens.hex || '#059669' }} />
-                  <span className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" />
-                  <span className="w-4 h-4 rounded-full bg-slate-800 shadow-sm" />
-                  <span className="w-4 h-4 rounded-full bg-emerald-400 shadow-sm" />
+            {/* CAS 1 : UN CONTENU INTÉRIEUR (SNIPPET) EST ACTIF */}
+            {activeSnippet && activeSnippetHostBlockId ? (
+              <div className="space-y-4">
+                
+                {/* En-tête des couleurs de l'élément */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-emerald-500/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+                      Couleurs & Ambiance de l'Élément
+                    </span>
+                    <h4 className="font-extrabold text-xs text-white">
+                      {snipData.label || snipData.title || snipData.name || snipType}
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateActiveSnippet({
+                        bgColor: undefined,
+                        textColor: undefined,
+                        borderColor: undefined,
+                        customBg: undefined,
+                        hoverEffect: undefined
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition-colors cursor-pointer border border-slate-700"
+                    title="Réinitialiser au thème par défaut"
+                  >
+                    Reset Thème
+                  </button>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-semibold">Thème</span>
-                <button
-                  type="button"
-                  onClick={() => setShowThemeModal(!showThemeModal)}
-                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer"
-                >
-                  Changer de thème
-                </button>
-              </div>
+                {/* 1. COULEUR DE FOND DE L'ÉLÉMENT */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-slate-300 block">
+                      Couleur de Fond de l'Élément
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {snipData.bgColor || 'Thème Auto'}
+                    </span>
+                  </div>
 
-              {showThemeModal && (
-                <div className="p-2.5 rounded-2xl bg-slate-900 border border-slate-700 grid grid-cols-2 gap-1.5 animate-fadeIn">
-                  {THEME_PALETTES_LIST.map((pal) => (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Option Fond Thème Actif */}
                     <button
-                      key={pal.id}
                       type="button"
-                      onClick={() => {
-                        onChangeTheme?.(pal.id);
-                        setShowThemeModal(false);
-                      }}
-                      className={`p-2 rounded-xl border text-left flex items-center gap-2 cursor-pointer transition-all ${
-                        themeId === pal.id ? 'bg-emerald-500/20 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'
+                      onClick={() => handleUpdateActiveSnippet({ bgColor: currentThemeTokens.hex })}
+                      className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-black flex items-center gap-1.5 cursor-pointer transition-all ${
+                        snipData.bgColor === currentThemeTokens.hex
+                          ? 'border-white ring-2 ring-emerald-500 text-white'
+                          : 'border-slate-700 text-slate-300 hover:text-white'
+                      }`}
+                      style={{ backgroundColor: currentThemeTokens.hex }}
+                    >
+                      <span>Thème Principal</span>
+                    </button>
+
+                    {/* Option Transparent */}
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateActiveSnippet({ bgColor: 'transparent' })}
+                      className={`px-2 py-1.5 rounded-xl border text-[10px] font-bold cursor-pointer transition-all ${
+                        snipData.bgColor === 'transparent'
+                          ? 'bg-slate-800 border-white ring-2 ring-emerald-500 text-white'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
                       }`}
                     >
-                      <span className="w-4 h-4 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: pal.hex }} />
-                      <span className="font-bold text-[11px] truncate">{pal.name.split(' (')[0]}</span>
+                      Transparent
                     </button>
-                  ))}
+
+                    {/* Nuancier étendu */}
+                    {[
+                      { id: '#0F172A', name: 'Noir Ardoise', hex: '#0F172A' },
+                      { id: '#FFFFFF', name: 'Blanc Pur', hex: '#FFFFFF' },
+                      { id: '#059669', name: 'Émeraude', hex: '#059669' },
+                      { id: '#2563EB', name: 'Saphir Bleu', hex: '#2563EB' },
+                      { id: '#7C3AED', name: 'Violet Royal', hex: '#7C3AED' },
+                      { id: '#DB2777', name: 'Rose Fushia', hex: '#DB2777' },
+                      { id: '#D97706', name: 'Ambre Chaud', hex: '#D97706' },
+                      { id: '#DC2626', name: 'Rouge Rubis', hex: '#DC2626' },
+                      { id: '#1E293B', name: 'Ardoise Foncée', hex: '#1E293B' },
+                      { id: '#F8FAFC', name: 'Blanc Crème', hex: '#F8FAFC' }
+                    ].map((sw) => {
+                      const isCur = snipData.bgColor === sw.hex;
+                      return (
+                        <button
+                          key={sw.id}
+                          type="button"
+                          onClick={() => handleUpdateActiveSnippet({ bgColor: sw.hex })}
+                          className={`w-7 h-7 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                            isCur ? 'ring-2 ring-emerald-500 scale-110 border-white shadow-md' : 'border-slate-700 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: sw.hex }}
+                          title={sw.name}
+                        >
+                          {isCur && <Check className="w-3.5 h-3.5 text-emerald-400 drop-shadow" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-semibold">Langue</span>
-                <select className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer">
-                  <option value="fr">Français (FR)</option>
-                  <option value="en">English (US)</option>
-                </select>
-              </div>
+                {/* 2. COULEUR DU TEXTE DE L'ÉLÉMENT */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-slate-300 block">
+                      Couleur du Texte & Titre
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {snipData.textColor || 'Auto'}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 font-semibold">Agencement page</span>
-                <select
-                  value={pageLayoutMode}
-                  onChange={(e) => {
-                    setPageLayoutMode(e.target.value);
-                    onUpdateThemeConfig?.({ pageLayout: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="full">Complet</option>
-                  <option value="boxed">Encadré</option>
-                </select>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
-                <span className="text-[11px] font-bold text-slate-400 block">Modèle Page Boutique</span>
-                <select
-                  value={shopTemplate}
-                  onChange={(e) => onChangeShopTemplate?.(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2 font-bold focus:outline-none cursor-pointer"
-                >
-                  {ODOO_SHOP_TEMPLATES.map((tmpl) => (
-                    <option key={tmpl.id} value={tmpl.id}>
-                      {tmpl.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* 2. SECTION PARAGRAPHE */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
-                Paragraphe
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Taille caractères</span>
-                <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
-                  <input
-                    type="number"
-                    value={paragraphFontSize}
-                    onChange={(e) => {
-                      setParagraphFontSize(e.target.value);
-                      onUpdateThemeConfig?.({ pSize: e.target.value });
-                    }}
-                    className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
-                  />
-                  <span className="text-slate-500 font-mono text-[10px]">px</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {TEXT_COLOR_SWATCHES.map((sw) => {
+                      const isCur = (snipData.textColor || 'default') === (sw.hex || sw.id);
+                      return (
+                        <button
+                          key={sw.id}
+                          type="button"
+                          onClick={() => handleUpdateActiveSnippet({ textColor: sw.hex || sw.id })}
+                          className={`w-7 h-7 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                            isCur ? 'ring-2 ring-emerald-500 scale-110 border-white' : 'border-slate-700 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: sw.hex || '#334155' }}
+                          title={sw.name}
+                        >
+                          {isCur && <Check className="w-3.5 h-3.5 text-slate-900 drop-shadow" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Font Family</span>
-                <select
-                  value={paragraphFontFamily}
-                  onChange={(e) => {
-                    setParagraphFontFamily(e.target.value);
-                    onUpdateThemeConfig?.({ pFont: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="SN Pro">SN Pro</option>
-                  <option value="Inter">Inter</option>
-                  <option value="Plus Jakarta">Plus Jakarta</option>
-                  <option value="Roboto">Roboto</option>
-                </select>
-              </div>
+                {/* 3. COULEUR DE BORDURE & ÉPAISSEUR */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase text-slate-300 block">
+                      Bordure & Contour
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {snipData.borderWidth || '1'}px
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Font Weight</span>
-                <select
-                  value={paragraphFontWeight}
-                  onChange={(e) => {
-                    setParagraphFontWeight(e.target.value);
-                    onUpdateThemeConfig?.({ pWeight: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="auto">Automatique</option>
-                  <option value="400">Normal (400)</option>
-                  <option value="500">Medium (500)</option>
-                  <option value="700">Gras (700)</option>
-                </select>
-              </div>
+                  <div className="flex items-center gap-1">
+                    {[
+                      { id: '0', label: '0px' },
+                      { id: '1', label: '1px' },
+                      { id: '2', label: '2px' },
+                      { id: '3', label: '3px' },
+                      { id: '4', label: '4px' }
+                    ].map(bw => (
+                      <button
+                        key={bw.id}
+                        type="button"
+                        onClick={() => handleUpdateActiveSnippet({ borderWidth: bw.id })}
+                        className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                          (snipData.borderWidth || '1') === bw.id
+                            ? 'bg-emerald-500/20 border-emerald-500 text-white font-black'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {bw.label}
+                      </button>
+                    ))}
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Hauteur de ligne</span>
-                <span className="font-bold text-white bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">1,5 x</span>
-              </div>
-            </div>
-
-            {/* 3. SECTION TITRES */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
-                Titres
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Taille caractères</span>
-                <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
-                  <input
-                    type="number"
-                    value={headingFontSize}
-                    onChange={(e) => {
-                      setHeadingFontSize(e.target.value);
-                      onUpdateThemeConfig?.({ hSize: e.target.value });
-                    }}
-                    className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
-                  />
-                  <span className="text-slate-500 font-mono text-[10px]">px</span>
+                  {/* Nuancier de bordure */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    {[
+                      { id: 'border-slate-700', name: 'Ardoise Neutre', hex: '#475569' },
+                      { id: 'border-emerald-500', name: 'Vert Émeraude', hex: '#10B981' },
+                      { id: 'border-cyan-500', name: 'Cyan Éclatant', hex: '#06B6D4' },
+                      { id: 'border-amber-500', name: 'Ambre Doré', hex: '#F59E0B' },
+                      { id: 'border-rose-500', name: 'Rose Vif', hex: '#F43F5E' },
+                      { id: 'border-white', name: 'Blanc Lumineux', hex: '#FFFFFF' }
+                    ].map(bc => (
+                      <button
+                        key={bc.id}
+                        type="button"
+                        onClick={() => handleUpdateActiveSnippet({ borderColor: bc.hex })}
+                        className={`w-6 h-6 rounded-lg border transition-all cursor-pointer flex items-center justify-center ${
+                          snipData.borderColor === bc.hex ? 'ring-2 ring-emerald-500 border-white scale-110' : 'border-slate-700'
+                        }`}
+                        style={{ backgroundColor: bc.hex }}
+                        title={bc.name}
+                      >
+                        {snipData.borderColor === bc.hex && <Check className="w-3 h-3 text-slate-900 drop-shadow" />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Font Family</span>
-                <select
-                  value={headingFontFamily}
-                  onChange={(e) => {
-                    setHeadingFontFamily(e.target.value);
-                    onUpdateThemeConfig?.({ hFont: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="Ultra One">Ultra One</option>
-                  <option value="Outfit">Outfit</option>
-                  <option value="Playfair">Playfair Display</option>
-                  <option value="Montserrat">Montserrat</option>
-                </select>
-              </div>
-            </div>
+                {/* 4. EFFET DE SURVOL (HOVER) */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase text-slate-300 block">
+                    Effet au Survol / Clic (Hover Effect)
+                  </span>
 
-            {/* 4. SECTION BOUTON */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
-                Bouton
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Style primaire</span>
-                <select
-                  value={buttonStylePrimary}
-                  onChange={(e) => {
-                    setButtonStylePrimary(e.target.value);
-                    onUpdateThemeConfig?.({ btnPrimaryStyle: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="fill">Remplir</option>
-                  <option value="gradient">Dégradé</option>
-                  <option value="glass">Verre dépoli</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Coins arrondis</span>
-                <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
-                  <input
-                    type="number"
-                    value={buttonBorderRadius}
-                    onChange={(e) => {
-                      setButtonBorderRadius(e.target.value);
-                      onUpdateThemeConfig?.({ btnRadius: e.target.value });
-                    }}
-                    className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
-                  />
-                  <span className="text-slate-500 font-mono text-[10px]">px</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'scale', label: '🔍 Zoom (+5%)', desc: 'Agrandissement doux' },
+                      { id: 'glow', label: '✨ Néon Glow', desc: 'Lueur colorée externe' },
+                      { id: 'lift', label: '🚀 Élévation 3D', desc: 'Décalage vers le haut' },
+                      { id: 'brightness', label: '💡 Luminosité', desc: 'Éclat intensifié' }
+                    ].map(he => (
+                      <button
+                        key={he.id}
+                        type="button"
+                        onClick={() => handleUpdateActiveSnippet({ hoverEffect: he.id })}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                          snipData.hoverEffect === he.id
+                            ? 'bg-emerald-500/20 border-emerald-500 text-white font-bold'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-xs font-bold block">{he.label}</span>
+                        <span className="text-[9px] text-slate-500 block">{he.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* 5. SECTION LIEN */}
-            <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
-              <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
-                Lien
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Style de lien</span>
-                <select
-                  value={linkStyle}
-                  onChange={(e) => {
-                    setLinkStyle(e.target.value);
-                    onUpdateThemeConfig?.({ linkStyle: e.target.value });
-                  }}
-                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="hover_underline">Souligner au survol</option>
-                  <option value="always_underline">Toujours souligné</option>
-                  <option value="none">Aucun</option>
-                </select>
               </div>
-            </div>
+            ) : selectedBlock ? (
+              /* CAS 2 : UN BLOC DE SECTION EST SÉLECTIONNÉ (SANS SNIPPET SPÉCIFIQUE) */
+              <div className="space-y-4">
+                
+                {/* En-tête de section */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-emerald-500/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+                      Ambiance & Couleurs de la Section
+                    </span>
+                    <h4 className="font-extrabold text-xs text-white">
+                      {blockDef?.name || selectedBlock.type}
+                    </h4>
+                  </div>
+                </div>
+
+                {/* 1. FOND DE LA SECTION */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <span className="text-[11px] font-black uppercase text-slate-300 block">
+                    Fond de la Section
+                  </span>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'default', label: 'Par Défaut', desc: 'Couleur du thème actif' },
+                      { id: 'dark_gradient', label: 'Dégradé Sombre', desc: 'Noir vers gris ardoise' },
+                      { id: 'glass', label: '💎 Verre Dépoli', desc: 'Translucide avec flou' },
+                      { id: 'pure_dark', label: 'Noir Profond', desc: 'Contrastes intenses' },
+                      { id: 'pure_light', label: 'Blanc Épuré', desc: 'Clarté lumineuse' },
+                      { id: 'transparent', label: 'Transparent', desc: 'Fond sans couleur' }
+                    ].map(bg => (
+                      <button
+                        key={bg.id}
+                        type="button"
+                        onClick={() => onUpdateBlockProps?.(selectedBlock.id, { sectionBg: bg.id })}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                          (selectedBlock.props?.sectionBg || 'default') === bg.id
+                            ? 'bg-emerald-500/20 border-emerald-500 text-white font-bold'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-xs font-bold block">{bg.label}</span>
+                        <span className="text-[9px] text-slate-500 block">{bg.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. COULEURS DES TITRES DE LA SECTION */}
+                <div className="space-y-3 p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800">
+                  <span className="text-[11px] font-black uppercase text-slate-300 block">
+                    Couleurs de Titre & Contraste
+                  </span>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] font-bold text-slate-400">Couleur du Titre</label>
+                      <span className="text-[10px] font-mono text-emerald-400">{selectedBlock.props?.titleColor || 'Auto'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {TEXT_COLOR_SWATCHES.map((sw) => {
+                        const isCur = (selectedBlock.props?.titleColor || 'default') === (sw.hex || sw.id);
+                        return (
+                          <button
+                            key={sw.id}
+                            type="button"
+                            onClick={() => onUpdateBlockProps?.(selectedBlock.id, { titleColor: sw.hex || sw.id })}
+                            className={`w-6 h-6 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
+                              isCur ? 'ring-2 ring-emerald-500 scale-110 border-white' : 'border-slate-700 hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: sw.hex || '#334155' }}
+                            title={sw.name}
+                          >
+                            {isCur && <Check className="w-3 h-3 text-slate-900 drop-shadow" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] font-bold text-slate-400">Couleur du Texte / Slogan</label>
+                      <span className="text-[10px] font-mono text-emerald-400">{selectedBlock.props?.textColor || 'Auto'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {TEXT_COLOR_SWATCHES.map((sw) => {
+                        const isCur = (selectedBlock.props?.textColor || 'default') === (sw.hex || sw.id);
+                        return (
+                          <button
+                            key={sw.id}
+                            type="button"
+                            onClick={() => onUpdateBlockProps?.(selectedBlock.id, { textColor: sw.hex || sw.id })}
+                            className={`w-6 h-6 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
+                              isCur ? 'ring-2 ring-emerald-500 scale-110 border-white' : 'border-slate-700 hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: sw.hex || '#334155' }}
+                            title={sw.name}
+                          >
+                            {isCur && <Check className="w-3 h-3 text-slate-900 drop-shadow" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              /* CAS 3 : RIEN DE SÉLECTIONNÉ ➔ THÈME GLOBAL DU SITE */
+              <div className="space-y-4">
+                
+                {/* 1. SECTION SITE WEB */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-3">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Site web
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-semibold">Couleurs</span>
+                    <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+                      <span className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: currentThemeTokens.hex || '#059669' }} />
+                      <span className="w-4 h-4 rounded-full bg-slate-200 shadow-sm" />
+                      <span className="w-4 h-4 rounded-full bg-slate-800 shadow-sm" />
+                      <span className="w-4 h-4 rounded-full bg-emerald-400 shadow-sm" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-semibold">Thème</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowThemeModal(!showThemeModal)}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer"
+                    >
+                      Changer de thème
+                    </button>
+                  </div>
+
+                  {showThemeModal && (
+                    <div className="p-2.5 rounded-2xl bg-slate-900 border border-slate-700 grid grid-cols-2 gap-1.5 animate-fadeIn">
+                      {THEME_PALETTES_LIST.map((pal) => (
+                        <button
+                          key={pal.id}
+                          type="button"
+                          onClick={() => {
+                            onChangeTheme?.(pal.id);
+                            setShowThemeModal(false);
+                          }}
+                          className={`p-2 rounded-xl border text-left flex items-center gap-2 cursor-pointer transition-all ${
+                            themeId === pal.id ? 'bg-emerald-500/20 border-emerald-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'
+                          }`}
+                        >
+                          <span className="w-4 h-4 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: pal.hex }} />
+                          <span className="font-bold text-[11px] truncate">{pal.name.split(' (')[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-semibold">Langue</span>
+                    <select className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer">
+                      <option value="fr">Français (FR)</option>
+                      <option value="en">English (US)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-semibold">Agencement page</span>
+                    <select
+                      value={pageLayoutMode}
+                      onChange={(e) => {
+                        setPageLayoutMode(e.target.value);
+                        onUpdateThemeConfig?.({ pageLayout: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="full">Complet</option>
+                      <option value="boxed">Encadré</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 block">Modèle Page Boutique</span>
+                    <select
+                      value={shopTemplate}
+                      onChange={(e) => onChangeShopTemplate?.(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2 font-bold focus:outline-none cursor-pointer"
+                    >
+                      {ODOO_SHOP_TEMPLATES.map((tmpl) => (
+                        <option key={tmpl.id} value={tmpl.id}>
+                          {tmpl.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 2. SECTION PARAGRAPHE */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Paragraphe
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Taille caractères</span>
+                    <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
+                      <input
+                        type="number"
+                        value={paragraphFontSize}
+                        onChange={(e) => {
+                          setParagraphFontSize(e.target.value);
+                          onUpdateThemeConfig?.({ pSize: e.target.value });
+                        }}
+                        className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
+                      />
+                      <span className="text-slate-500 font-mono text-[10px]">px</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Font Family</span>
+                    <select
+                      value={paragraphFontFamily}
+                      onChange={(e) => {
+                        setParagraphFontFamily(e.target.value);
+                        onUpdateThemeConfig?.({ pFont: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="SN Pro">SN Pro</option>
+                      <option value="Inter">Inter</option>
+                      <option value="Plus Jakarta">Plus Jakarta</option>
+                      <option value="Roboto">Roboto</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Font Weight</span>
+                    <select
+                      value={paragraphFontWeight}
+                      onChange={(e) => {
+                        setParagraphFontWeight(e.target.value);
+                        onUpdateThemeConfig?.({ pWeight: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="auto">Automatique</option>
+                      <option value="400">Normal (400)</option>
+                      <option value="500">Medium (500)</option>
+                      <option value="700">Gras (700)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Hauteur de ligne</span>
+                    <span className="font-bold text-white bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">1,5 x</span>
+                  </div>
+                </div>
+
+                {/* 3. SECTION TITRES */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Titres
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Taille caractères</span>
+                    <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
+                      <input
+                        type="number"
+                        value={headingFontSize}
+                        onChange={(e) => {
+                          setHeadingFontSize(e.target.value);
+                          onUpdateThemeConfig?.({ hSize: e.target.value });
+                        }}
+                        className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
+                      />
+                      <span className="text-slate-500 font-mono text-[10px]">px</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Font Family</span>
+                    <select
+                      value={headingFontFamily}
+                      onChange={(e) => {
+                        setHeadingFontFamily(e.target.value);
+                        onUpdateThemeConfig?.({ hFont: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="Ultra One">Ultra One</option>
+                      <option value="Outfit">Outfit</option>
+                      <option value="Playfair">Playfair Display</option>
+                      <option value="Montserrat">Montserrat</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 4. SECTION BOUTON */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Bouton
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Style primaire</span>
+                    <select
+                      value={buttonStylePrimary}
+                      onChange={(e) => {
+                        setButtonStylePrimary(e.target.value);
+                        onUpdateThemeConfig?.({ btnPrimaryStyle: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="fill">Remplir</option>
+                      <option value="gradient">Dégradé</option>
+                      <option value="glass">Verre dépoli</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Coins arrondis</span>
+                    <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700">
+                      <input
+                        type="number"
+                        value={buttonBorderRadius}
+                        onChange={(e) => {
+                          setButtonBorderRadius(e.target.value);
+                          onUpdateThemeConfig?.({ btnRadius: e.target.value });
+                        }}
+                        className="w-10 bg-transparent text-white font-bold text-right focus:outline-none"
+                      />
+                      <span className="text-slate-500 font-mono text-[10px]">px</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. SECTION LIEN */}
+                <div className="p-3.5 rounded-2xl bg-[#1D2027] border border-slate-800 space-y-2.5">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Lien
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Style de lien</span>
+                    <select
+                      value={linkStyle}
+                      onChange={(e) => {
+                        setLinkStyle(e.target.value);
+                        onUpdateThemeConfig?.({ linkStyle: e.target.value });
+                      }}
+                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="hover_underline">Souligner au survol</option>
+                      <option value="always_underline">Toujours souligné</option>
+                      <option value="none">Aucun</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+            )}
 
           </div>
         )}
